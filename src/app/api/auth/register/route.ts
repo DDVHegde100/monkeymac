@@ -23,13 +23,13 @@ export async function POST(request: NextRequest) {
 
     // Check if user already exists
     const existingUser = await users.findOne({
-      $or: [{ email }, { username }]
+      $or: [{ phone }, { username }]
     })
 
     if (existingUser) {
       await client.close()
       return NextResponse.json(
-        { error: 'User with this email or username already exists' },
+        { error: 'User with this phone or username already exists' },
         { status: 409 }
       )
     }
