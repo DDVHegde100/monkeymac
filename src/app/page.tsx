@@ -18,6 +18,13 @@ export default function HomePage() {
     checkAuthStatus()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Redirect to test page - this is now the main experience
+  useEffect(() => {
+    if (!loading) {
+      window.location.href = '/test'
+    }
+  }, [loading])
+
   const checkAuthStatus = async () => {
     try {
       const response = await fetch('/api/auth/me')
