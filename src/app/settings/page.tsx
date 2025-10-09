@@ -219,7 +219,7 @@ export default function SettingsPage() {
     checkAuthStatus()
     loadSavedTheme()
     loadSavedFont()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkAuthStatus = async () => {
     try {

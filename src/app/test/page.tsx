@@ -156,7 +156,7 @@ export default function MathTest() {
     }
     
     return () => clearInterval(interval)
-  }, [testState, timeLeft])
+  }, [testState, timeLeft]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const submitAnswer = () => {
     if (!currentProblem || userInput.trim() === '') return
