@@ -167,13 +167,6 @@ export default function MathTest() {
     const userAnswer = userInput.trim()
     const isCorrect = parseInt(userAnswer) === currentProblem.answer
     
-    // Only advance if the answer is correct
-    if (!isCorrect) {
-      setUserInput('') // Clear input for wrong answer
-      setTimeout(() => inputRef.current?.focus(), 50)
-      return
-    }
-    
     const completedProblem: Problem = {
       ...currentProblem,
       userAnswer,
@@ -183,15 +176,18 @@ export default function MathTest() {
     
     setProblems(prev => [...prev, completedProblem])
     
-    if (testState === 'testing') {
+    // Only advance if the answer is correct (for ZetaMac-style gameplay)
+    if (isCorrect && testState === 'testing') {
       const nextProblem = generateProblem()
       setCurrentProblem(nextProblem)
       setProblemStartTime(Date.now())
       setUserInput('')
       
-      if (settings.autoAdvance) {
-        setTimeout(() => inputRef.current?.focus(), 50)
-      }
+      setTimeout(() => inputRef.current?.focus(), 50)
+    } else if (!isCorrect) {
+      // Clear input for wrong answer but stay on same problem
+      setUserInput('')
+      setTimeout(() => inputRef.current?.focus(), 50)
     }
   }
 
@@ -272,8 +268,11 @@ export default function MathTest() {
           <div className="bg-bg-secondary rounded-lg p-8 max-w-md w-full border border-gray-600">
             <div className="text-center mb-6">
               <h2 className="text-3xl font-bold text-accent mb-2">MonkeyMac</h2>
-              <p className="text-text-secondary">
-                Mental math training with MonkeyType styling
+              <p className="text-text-secondary mb-1">
+                ZetaMac × MonkeyType
+              </p>
+              <p className="text-sm text-text-secondary opacity-75">
+                Fast Math × Trackable Stats
               </p>
             </div>
             
@@ -296,35 +295,47 @@ export default function MathTest() {
                     : 'bg-bg-primary text-text-primary hover:bg-gray-700'
                 }`}
               >
-                Register
+                Sign Up
               </button>
             </div>
 
             {authMode === 'login' ? (
               <div className="space-y-4">
                 <p className="text-text-secondary text-center mb-4">
-                  Welcome back! Please sign in to continue.
+                  Welcome back! Please log in to continue.
                 </p>
                 <button 
                   onClick={() => router.push('/login')}
                   className="w-full btn-primary py-3"
                 >
-                  Go to Login Page
+                  Log In
                 </button>
               </div>
             ) : (
               <div className="space-y-4">
                 <p className="text-text-secondary text-center mb-4">
-                  Create an account to start training your math skills!
+                  Create an account to track your progress and save your stats!
                 </p>
                 <button 
                   onClick={() => router.push('/register')}
                   className="w-full btn-primary py-3"
                 >
-                  Go to Register Page
+                  Sign Up
                 </button>
               </div>
             )}
+            
+            <div className="mt-6 pt-4 border-t border-gray-600">
+              <button 
+                onClick={() => setIsAuthenticated(true)}
+                className="w-full py-3 px-4 rounded border border-gray-500 text-text-secondary hover:text-text-primary hover:border-gray-400 transition-colors"
+              >
+                Continue as Guest
+              </button>
+              <p className="text-xs text-text-secondary opacity-60 text-center mt-2">
+                (your progress won't be saved 😢)
+              </p>
+            </div>
           </div>
         </div>
       </div>
