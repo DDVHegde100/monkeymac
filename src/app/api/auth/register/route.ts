@@ -6,11 +6,11 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/monkey
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, email, password } = await request.json()
+    const { firstName, username, phone, password } = await request.json()
 
-    if (!username || !email || !password) {
+    if (!firstName || !username || !phone || !password) {
       return NextResponse.json(
-        { error: 'Username, email, and password are required' },
+        { error: 'First name, username, phone, and password are required' },
         { status: 400 }
       )
     }
