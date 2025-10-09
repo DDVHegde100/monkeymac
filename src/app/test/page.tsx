@@ -323,14 +323,14 @@ export default function MathTest() {
     
     setProblems(prev => [...prev, completedProblem])
     
-    // Only advance if the answer is correct (for ZetaMac-style gameplay)
+    // ZetaMac behavior: only advance on correct answers
     if (isCorrect && testState === 'testing') {
       const nextProblem = generateProblem()
       setCurrentProblem(nextProblem)
       setProblemStartTime(Date.now())
       setUserInput('')
       
-      // Abstract mode: auto-generate new problem after time limit
+      // Abstract mode timer reset
       if (settings.difficulty === 'abstract' && settings.abstractTimeLimit) {
         setAbstractModeTimer(settings.abstractTimeLimit)
       }
@@ -347,11 +347,37 @@ export default function MathTest() {
     const value = e.target.value
     setUserInput(value)
     
-    if (settings.autoAdvance && value.length > 0 && currentProblem) {
-      const possibleAnswer = parseInt(value)
-      // Only auto-advance on correct answer
-      if (!isNaN(possibleAnswer) && possibleAnswer === currentProblem.answer) {
-        setTimeout(submitAnswer, 100)
+    // Auto-advance: immediately check if answer is correct without timeout delays
+    const trimmedValue = value.trim()
+    if (settings.autoAdvance && currentProblem && trimmedValue !== '') {
+      const userAnswer = parseInt(trimmedValue)
+      
+      // Only auto-submit if we have a valid number that matches exactly
+      if (!isNaN(userAnswer) && userAnswer === currentProblem.answer) {
+        // Use the current values directly instead of relying on state
+        const timeSpent = Date.now() - problemStartTime
+        
+        const completedProblem: Problem = {
+          ...currentProblem,
+          userAnswer: trimmedValue,
+          isCorrect: true, // We know it's correct because we just verified it
+          timeSpent
+        }
+        
+        setProblems(prev => [...prev, completedProblem])
+        
+        // Generate next problem
+        const nextProblem = generateProblem()
+        setCurrentProblem(nextProblem)
+        setProblemStartTime(Date.now())
+        setUserInput('')
+        
+        // Abstract mode timer reset
+        if (settings.difficulty === 'abstract' && settings.abstractTimeLimit) {
+          setAbstractModeTimer(settings.abstractTimeLimit)
+        }
+        
+        setTimeout(() => inputRef.current?.focus(), 50)
       }
     }
   }
