@@ -8,11 +8,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    const { username, password } = await request.json()
 
-    if (!email || !password) {
+    if (!username || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Username and password are required' },
         { status: 400 }
       )
     }
@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
     const db = client.db('monkeymax')
     const users = db.collection('users')
 
-    // Find user by email
-    const user = await users.findOne({ email })
+    // Find user by username
+    const user = await users.findOne({ username })
     
     if (!user) {
       await client.close()
@@ -51,8 +51,9 @@ export async function POST(request: NextRequest) {
     const token = jwt.sign(
       { 
         userId: user._id,
+        firstName: user.firstName,
         username: user.username,
-        email: user.email
+        phone: user.phone
       },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -64,8 +65,9 @@ export async function POST(request: NextRequest) {
         message: 'Login successful',
         user: {
           id: user._id,
+          firstName: user.firstName,
           username: user.username,
-          email: user.email,
+          phone: user.phone,
           stats: user.stats
         }
       },

@@ -40,8 +40,9 @@ export async function POST(request: NextRequest) {
 
     // Create user
     const newUser = {
+      firstName,
       username,
-      email,
+      phone,
       password: hashedPassword,
       createdAt: new Date(),
       stats: {
