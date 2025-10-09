@@ -8,13 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'bg-primary': '#1a1a1a',
-        'bg-secondary': '#2a2a2a',
-        'text-primary': '#ffffff',
-        'text-secondary': '#b8b8b8',
-        'accent': '#ffd700',
-        'correct': '#00ff00',
-        'incorrect': '#ff0000',
+        'bg-primary': 'var(--bg-primary)',
+        'bg-secondary': 'var(--bg-secondary)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'accent': 'var(--accent)',
+        'correct': 'var(--correct)',
+        'incorrect': 'var(--incorrect)',
       },
       fontFamily: {
         'mono': ['Fira Code', 'Monaco', 'Cascadia Code', 'Ubuntu Mono', 'monospace'],
