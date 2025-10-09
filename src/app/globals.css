@@ -14,6 +14,9 @@
   --correct: #00ff00;
   --incorrect: #ff0000;
   
+  /* Default Font */
+  --font-family: 'Fira Code', Monaco, Consolas, monospace;
+  
   /* Legacy variables for compatibility */
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 26, 26, 26;
@@ -28,7 +31,7 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
-  font-family: 'Fira Code', monospace;
+  font-family: var(--font-family);
 }
 
 /* MonkeyType-inspired styling */

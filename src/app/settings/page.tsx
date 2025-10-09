@@ -17,6 +17,13 @@ interface Theme {
   }
 }
 
+interface Font {
+  id: string
+  name: string
+  family: string
+  category: 'serif' | 'sans-serif' | 'monospace' | 'display' | 'handwriting'
+}
+
 const THEMES: Theme[] = [
   // Original MonkeyType inspired themes
   { id: 'dark', name: 'Dark (Default)', colors: { primary: '#1a1a1a', secondary: '#2a2a2a', accent: '#ffd700', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#ffffff', textSecondary: '#b8b8b8' }},
@@ -160,9 +167,50 @@ const THEMES: Theme[] = [
   { id: 'snowy', name: 'Snowy', colors: { primary: '#ecf0f1', secondary: '#bdc3c7', accent: '#3498db', correct: '#27ae60', incorrect: '#e74c3c', textPrimary: '#2c3e50', textSecondary: '#7f8c8d' }}
 ]
 
+const FONTS: Font[] = [
+  // Monospace fonts (best for typing tests)
+  { id: 'fira-code', name: 'Fira Code', family: 'Fira Code, Monaco, Consolas, monospace', category: 'monospace' },
+  { id: 'jetbrains-mono', name: 'JetBrains Mono', family: 'JetBrains Mono, monospace', category: 'monospace' },
+  { id: 'source-code-pro', name: 'Source Code Pro', family: 'Source Code Pro, monospace', category: 'monospace' },
+  { id: 'consolas', name: 'Consolas', family: 'Consolas, Monaco, monospace', category: 'monospace' },
+  { id: 'monaco', name: 'Monaco', family: 'Monaco, Consolas, monospace', category: 'monospace' },
+  { id: 'courier-new', name: 'Courier New', family: 'Courier New, Courier, monospace', category: 'monospace' },
+  { id: 'roboto-mono', name: 'Roboto Mono', family: 'Roboto Mono, monospace', category: 'monospace' },
+  { id: 'ubuntu-mono', name: 'Ubuntu Mono', family: 'Ubuntu Mono, monospace', category: 'monospace' },
+  { id: 'cascadia-code', name: 'Cascadia Code', family: 'Cascadia Code, Consolas, monospace', category: 'monospace' },
+  { id: 'inconsolata', name: 'Inconsolata', family: 'Inconsolata, monospace', category: 'monospace' },
+  
+  // Sans-serif fonts
+  { id: 'inter', name: 'Inter', family: 'Inter, system-ui, sans-serif', category: 'sans-serif' },
+  { id: 'roboto', name: 'Roboto', family: 'Roboto, system-ui, sans-serif', category: 'sans-serif' },
+  { id: 'helvetica', name: 'Helvetica', family: 'Helvetica, Arial, sans-serif', category: 'sans-serif' },
+  { id: 'arial', name: 'Arial', family: 'Arial, Helvetica, sans-serif', category: 'sans-serif' },
+  { id: 'open-sans', name: 'Open Sans', family: 'Open Sans, sans-serif', category: 'sans-serif' },
+  { id: 'lato', name: 'Lato', family: 'Lato, sans-serif', category: 'sans-serif' },
+  { id: 'montserrat', name: 'Montserrat', family: 'Montserrat, sans-serif', category: 'sans-serif' },
+  { id: 'nunito', name: 'Nunito', family: 'Nunito, sans-serif', category: 'sans-serif' },
+  { id: 'poppins', name: 'Poppins', family: 'Poppins, sans-serif', category: 'sans-serif' },
+  { id: 'system-ui', name: 'System UI', family: 'system-ui, -apple-system, sans-serif', category: 'sans-serif' },
+  
+  // Serif fonts
+  { id: 'times-new-roman', name: 'Times New Roman', family: 'Times New Roman, Times, serif', category: 'serif' },
+  { id: 'georgia', name: 'Georgia', family: 'Georgia, Times, serif', category: 'serif' },
+  { id: 'merriweather', name: 'Merriweather', family: 'Merriweather, serif', category: 'serif' },
+  { id: 'playfair', name: 'Playfair Display', family: 'Playfair Display, serif', category: 'serif' },
+  { id: 'crimson-text', name: 'Crimson Text', family: 'Crimson Text, serif', category: 'serif' },
+  { id: 'libre-baskerville', name: 'Libre Baskerville', family: 'Libre Baskerville, serif', category: 'serif' },
+  
+  // Display fonts
+  { id: 'lexend', name: 'Lexend', family: 'Lexend, sans-serif', category: 'display' },
+  { id: 'comfortaa', name: 'Comfortaa', family: 'Comfortaa, sans-serif', category: 'display' },
+  { id: 'quicksand', name: 'Quicksand', family: 'Quicksand, sans-serif', category: 'display' },
+  { id: 'space-grotesk', name: 'Space Grotesk', family: 'Space Grotesk, sans-serif', category: 'display' }
+]
+
 export default function SettingsPage() {
   const router = useRouter()
   const [currentTheme, setCurrentTheme] = useState('dark')
+  const [currentFont, setCurrentFont] = useState('fira-code')
   const [user, setUser] = useState<any>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -170,6 +218,7 @@ export default function SettingsPage() {
   useEffect(() => {
     checkAuthStatus()
     loadSavedTheme()
+    loadSavedFont()
   }, [])
 
   const checkAuthStatus = async () => {
@@ -195,6 +244,14 @@ export default function SettingsPage() {
     }
   }
 
+  const loadSavedFont = () => {
+    const savedFont = localStorage.getItem('monkeymax-font')
+    if (savedFont) {
+      setCurrentFont(savedFont)
+      applyFont(savedFont)
+    }
+  }
+
   const applyTheme = (themeId: string) => {
     const theme = THEMES.find(t => t.id === themeId)
     if (!theme) return
@@ -209,10 +266,24 @@ export default function SettingsPage() {
     root.style.setProperty('--incorrect', theme.colors.incorrect)
   }
 
+  const applyFont = (fontId: string) => {
+    const font = FONTS.find(f => f.id === fontId)
+    if (!font) return
+
+    const root = document.documentElement
+    root.style.setProperty('--font-family', font.family)
+  }
+
   const handleThemeChange = (themeId: string) => {
     setCurrentTheme(themeId)
     applyTheme(themeId)
     localStorage.setItem('monkeymax-theme', themeId)
+  }
+
+  const handleFontChange = (fontId: string) => {
+    setCurrentFont(fontId)
+    applyFont(fontId)
+    localStorage.setItem('monkeymax-font', fontId)
   }
 
   if (loading) {
@@ -350,6 +421,61 @@ export default function SettingsPage() {
                           borderColor: theme.colors.accent
                         }}
                       >
+                        ACTIVE
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Font Selection */}
+        <div className="stats-card mb-8">
+          <h2 className="text-3xl font-semibold mb-6">Fonts</h2>
+          <p className="text-text-secondary mb-6">
+            Choose a font family for the typing test and interface
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {FONTS.map((font) => (
+              <div
+                key={font.id}
+                className={`cursor-pointer p-4 rounded-lg border-2 transition-all duration-200 bg-bg-secondary ${
+                  currentFont === font.id 
+                    ? 'border-accent scale-105' 
+                    : 'border-gray-600 hover:border-gray-400'
+                }`}
+                onClick={() => handleFontChange(font.id)}
+              >
+                <div className="text-center">
+                  <h3 className="text-sm font-semibold mb-3 text-text-primary">
+                    {font.name}
+                  </h3>
+                  
+                  {/* Font preview */}
+                  <div 
+                    className="text-lg mb-2 text-text-primary"
+                    style={{ fontFamily: font.family }}
+                  >
+                    Aa 123
+                  </div>
+                  
+                  <div 
+                    className="text-xs text-text-secondary mb-3"
+                    style={{ fontFamily: font.family }}
+                  >
+                    The quick brown fox
+                  </div>
+                  
+                  <div className="text-xs text-text-secondary capitalize">
+                    {font.category}
+                  </div>
+
+                  {currentFont === font.id && (
+                    <div className="mt-3 text-center">
+                      <div className="text-xs font-bold px-2 py-1 rounded-full bg-accent text-black">
                         ACTIVE
                       </div>
                     </div>
