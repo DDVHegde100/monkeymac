@@ -228,11 +228,52 @@ export default function SettingsPage() {
         const data = await response.json()
         setUser(data.user)
         setIsAuthenticated(true)
+        // Load user preferences after authentication
+        loadUserPreferences()
       }
     } catch (error) {
       console.error('Auth check failed:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadUserPreferences = async () => {
+    try {
+      const response = await fetch('/api/user/preferences')
+      if (response.ok) {
+        const data = await response.json()
+        const { theme, font } = data.preferences
+        
+        // Apply theme and font
+        setCurrentTheme(theme)
+        applyTheme(theme)
+        setCurrentFont(font)
+        applyFont(font)
+        
+        // Also save to localStorage as backup
+        localStorage.setItem('monkeymax-theme', theme)
+        localStorage.setItem('monkeymax-font', font)
+      }
+    } catch (error) {
+      console.error('Failed to load user preferences:', error)
+      // Fall back to localStorage if backend fails
+      loadSavedTheme()
+      loadSavedFont()
+    }
+  }
+
+  const saveUserPreferences = async (theme: string, font: string) => {
+    try {
+      await fetch('/api/user/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ theme, font }),
+      })
+    } catch (error) {
+      console.error('Failed to save user preferences:', error)
     }
   }
 
@@ -278,12 +319,22 @@ export default function SettingsPage() {
     setCurrentTheme(themeId)
     applyTheme(themeId)
     localStorage.setItem('monkeymax-theme', themeId)
+    
+    // Save to backend if authenticated
+    if (isAuthenticated) {
+      saveUserPreferences(themeId, currentFont)
+    }
   }
 
   const handleFontChange = (fontId: string) => {
     setCurrentFont(fontId)
     applyFont(fontId)
     localStorage.setItem('monkeymax-font', fontId)
+    
+    // Save to backend if authenticated
+    if (isAuthenticated) {
+      saveUserPreferences(currentTheme, fontId)
+    }
   }
 
   if (loading) {

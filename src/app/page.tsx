@@ -24,12 +24,63 @@ export default function HomePage() {
       if (response.ok) {
         const data = await response.json()
         setUser(data.user)
+        // Load user preferences
+        loadUserPreferences()
       }
     } catch (error) {
       console.error('Auth check failed:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const loadUserPreferences = async () => {
+    try {
+      const response = await fetch('/api/user/preferences')
+      if (response.ok) {
+        const data = await response.json()
+        const { theme, font } = data.preferences
+        
+        // Apply theme and font
+        applyTheme(theme)
+        applyFont(font)
+      }
+    } catch (error) {
+      console.error('Failed to load user preferences:', error)
+    }
+  }
+
+  const applyTheme = (themeId: string) => {
+    const themes: Record<string, any> = {
+      'dark': { primary: '#1a1a1a', secondary: '#2a2a2a', accent: '#ffd700', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#ffffff', textSecondary: '#b8b8b8' },
+      'light': { primary: '#ffffff', secondary: '#f5f5f5', accent: '#0066cc', correct: '#00aa00', incorrect: '#cc0000', textPrimary: '#000000', textSecondary: '#666666' },
+      'serika': { primary: '#323437', secondary: '#2c2e31', accent: '#e2b714', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#d1d0c5', textSecondary: '#646669' }
+    }
+
+    const theme = themes[themeId] || themes['dark']
+    const root = document.documentElement
+    root.style.setProperty('--bg-primary', theme.primary)
+    root.style.setProperty('--bg-secondary', theme.secondary)
+    root.style.setProperty('--text-primary', theme.textPrimary)
+    root.style.setProperty('--text-secondary', theme.textSecondary)
+    root.style.setProperty('--accent', theme.accent)
+    root.style.setProperty('--correct', theme.correct)
+    root.style.setProperty('--incorrect', theme.incorrect)
+  }
+
+  const applyFont = (fontId: string) => {
+    const fonts: Record<string, string> = {
+      'fira-code': 'Fira Code, Monaco, Consolas, monospace',
+      'jetbrains-mono': 'JetBrains Mono, monospace',
+      'source-code-pro': 'Source Code Pro, monospace',
+      'consolas': 'Consolas, Monaco, monospace',
+      'inter': 'Inter, system-ui, sans-serif',
+      'roboto': 'Roboto, system-ui, sans-serif'
+    }
+
+    const fontFamily = fonts[fontId] || fonts['fira-code']
+    const root = document.documentElement
+    root.style.setProperty('--font-family', fontFamily)
   }
 
   const handleLogout = async () => {
