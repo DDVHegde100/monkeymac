@@ -78,6 +78,7 @@ export default function MathTest() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   const [abstractModeTimer, setAbstractModeTimer] = useState<number | null>(null)
   const [userPreferences, setUserPreferences] = useState<any>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   const inputRef = useRef<HTMLInputElement>(null)
   const testStartTimeRef = useRef(0)
@@ -308,11 +309,25 @@ export default function MathTest() {
   }, [settings.difficulty, abstractModeTimer, testState, settings.abstractTimeLimit, generateProblem])
 
   const submitAnswer = () => {
-    if (!currentProblem || userInput.trim() === '') return
+    if (!currentProblem || userInput.trim() === '' || isSubmitting) return
+    
+    // Set submission lock
+    setIsSubmitting(true)
     
     const timeSpent = Date.now() - problemStartTime
     const userAnswer = userInput.trim()
-    const isCorrect = parseInt(userAnswer) === currentProblem.answer
+    const parsedAnswer = parseInt(userAnswer)
+    const isCorrect = !isNaN(parsedAnswer) && parsedAnswer === currentProblem.answer
+    
+    // Debug logging
+    console.log('Manual submit:', {
+      input: userAnswer,
+      parsed: parsedAnswer,
+      expected: currentProblem.answer,
+      isCorrect,
+      problem: `${currentProblem.operand1} ${getOperationSymbol(currentProblem.operation)} ${currentProblem.operand2}`,
+      problemId: currentProblem.id
+    })
     
     const completedProblem: Problem = {
       ...currentProblem,
@@ -335,11 +350,17 @@ export default function MathTest() {
         setAbstractModeTimer(settings.abstractTimeLimit)
       }
       
-      setTimeout(() => inputRef.current?.focus(), 50)
+      setTimeout(() => {
+        setIsSubmitting(false)
+        inputRef.current?.focus()
+      }, 100)
     } else if (!isCorrect) {
       // Clear input for wrong answer but stay on same problem
       setUserInput('')
-      setTimeout(() => inputRef.current?.focus(), 50)
+      setTimeout(() => {
+        setIsSubmitting(false)
+        inputRef.current?.focus()
+      }, 100)
     }
   }
 
@@ -347,26 +368,44 @@ export default function MathTest() {
     const value = e.target.value
     setUserInput(value)
     
-    // Auto-advance: immediately check if answer is correct without timeout delays
+    // Prevent auto-submit if already submitting
+    if (isSubmitting) return
+    
+    // Auto-advance: check if answer is correct and auto-submit
     const trimmedValue = value.trim()
-    if (settings.autoAdvance && currentProblem && trimmedValue !== '') {
+    if (settings.autoAdvance && currentProblem && trimmedValue !== '' && testState === 'testing') {
       const userAnswer = parseInt(trimmedValue)
+      
+      // Debug logging
+      console.log('Auto-submit check:', {
+        input: trimmedValue,
+        parsed: userAnswer,
+        expected: currentProblem.answer,
+        isValid: !isNaN(userAnswer),
+        matches: userAnswer === currentProblem.answer,
+        problemId: currentProblem.id
+      })
       
       // Only auto-submit if we have a valid number that matches exactly
       if (!isNaN(userAnswer) && userAnswer === currentProblem.answer) {
-        // Use the current values directly instead of relying on state
+        console.log('Auto-submitting correct answer:', userAnswer)
+        
+        // Set submission lock
+        setIsSubmitting(true)
+        
+        // Use the current values directly
         const timeSpent = Date.now() - problemStartTime
         
         const completedProblem: Problem = {
           ...currentProblem,
           userAnswer: trimmedValue,
-          isCorrect: true, // We know it's correct because we just verified it
+          isCorrect: true, // We know it's correct
           timeSpent
         }
         
         setProblems(prev => [...prev, completedProblem])
         
-        // Generate next problem
+        // Generate next problem and clear input
         const nextProblem = generateProblem()
         setCurrentProblem(nextProblem)
         setProblemStartTime(Date.now())
@@ -377,7 +416,11 @@ export default function MathTest() {
           setAbstractModeTimer(settings.abstractTimeLimit)
         }
         
-        setTimeout(() => inputRef.current?.focus(), 50)
+        // Release submission lock and focus input
+        setTimeout(() => {
+          setIsSubmitting(false)
+          inputRef.current?.focus()
+        }, 100)
       }
     }
   }
