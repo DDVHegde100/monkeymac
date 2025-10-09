@@ -45,3 +45,7 @@ body {
 .btn-secondary {
   @apply bg-bg-secondary text-text-primary px-6 py-2 rounded font-semibold hover:bg-gray-600 transition-colors;
 }
+
+.main-content {
+  min-height: calc(100vh - 120px);
+}

@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function RegisterPage() {
+  const [firstName, setFirstName] = useState('')
   const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -36,13 +37,13 @@ export default function RegisterPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ firstName, username, phone, password }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        router.push('/login?message=Registration successful')
+        router.push('/login')
       } else {
         setError(data.error || 'Registration failed')
       }
@@ -60,6 +61,20 @@ export default function RegisterPage() {
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
+            <label htmlFor="firstName" className="block text-sm font-medium mb-2">
+              First Name
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full px-3 py-2 bg-bg-secondary border border-gray-600 rounded-md text-text-primary focus:outline-none focus:border-accent"
+              required
+            />
+          </div>
+
+          <div>
             <label htmlFor="username" className="block text-sm font-medium mb-2">
               Username
             </label>
@@ -74,15 +89,16 @@ export default function RegisterPage() {
           </div>
           
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email
+            <label htmlFor="phone" className="block text-sm font-medium mb-2">
+              Phone Number
             </label>
             <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="tel"
+              id="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               className="w-full px-3 py-2 bg-bg-secondary border border-gray-600 rounded-md text-text-primary focus:outline-none focus:border-accent"
+              placeholder="e.g. +1234567890"
               required
             />
           </div>
