@@ -5,6 +5,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap');
 
 :root {
+  /* Default Dark Theme */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2a2a2a;
+  --text-primary: #ffffff;
+  --text-secondary: #b8b8b8;
+  --accent: #ffd700;
+  --correct: #00ff00;
+  --incorrect: #ff0000;
+  
+  /* Legacy variables for compatibility */
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 26, 26, 26;
   --background-end-rgb: 26, 26, 26;

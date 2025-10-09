@@ -1,164 +1,498 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+
+interface TestSettings {
+  duration: number
+  operations: ('addition' | 'subtraction' | 'multiplication' | 'division')[]
+  ranges: {
+    addition: { min: number, max: number }
+    subtraction: { min: number, max: number }
+    multiplication: { min: number, max: number }
+    division: { min: number, max: number }
+  }
+  autoAdvance: boolean
+}
 
 interface Problem {
-  question: string
+  id: string
+  operation: string
+  operand1: number
+  operand2: number
   answer: number
-  operator: string
+  userAnswer: string
+  isCorrect: boolean | null
+  timeSpent: number
+  timestamp: number
+}
+
+const DEFAULT_SETTINGS: TestSettings = {
+  duration: 120,
+  operations: ['addition', 'subtraction', 'multiplication', 'division'],
+  ranges: {
+    addition: { min: 1, max: 99 },
+    subtraction: { min: 1, max: 99 },
+    multiplication: { min: 1, max: 12 },
+    division: { min: 1, max: 144 }
+  },
+  autoAdvance: true
 }
 
 export default function MathTest() {
-  const [problem, setProblem] = useState<Problem>({ question: '', answer: 0, operator: '+' })
-  const [userInput, setUserInput] = useState('')
-  const [score, setScore] = useState(0)
-  const [timeLeft, setTimeLeft] = useState(60)
-  const [isActive, setIsActive] = useState(false)
+  const router = useRouter()
+  const [user, setUser] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(true)
+  
+  const [testState, setTestState] = useState<'setup' | 'testing' | 'finished'>('setup')
+  const [settings, setSettings] = useState<TestSettings>(DEFAULT_SETTINGS)
+  const [currentProblem, setCurrentProblem] = useState<Problem | null>(null)
   const [problems, setProblems] = useState<Problem[]>([])
-  const [currentProblemIndex, setCurrentProblemIndex] = useState(0)
+  const [userInput, setUserInput] = useState('')
+  const [timeLeft, setTimeLeft] = useState(120)
+  const [problemStartTime, setProblemStartTime] = useState(0)
+  
+  const inputRef = useRef<HTMLInputElement>(null)
+  const testStartTimeRef = useRef(0)
 
-  const generateProblem = (): Problem => {
-    const operators = ['+', '-', '*', '/']
-    const operator = operators[Math.floor(Math.random() * operators.length)]
+  useEffect(() => {
+    checkAuthStatus()
+  }, [])
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/api/auth/me')
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+        setIsAuthenticated(true)
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const generateProblem = useCallback((): Problem => {
+    const availableOps = settings.operations
+    const operation = availableOps[Math.floor(Math.random() * availableOps.length)]
     
-    let a: number, b: number, answer: number
+    let operand1: number, operand2: number, answer: number
+    const range = settings.ranges[operation]
     
-    switch (operator) {
-      case '+':
-        a = Math.floor(Math.random() * 100) + 1
-        b = Math.floor(Math.random() * 100) + 1
-        answer = a + b
+    switch (operation) {
+      case 'addition':
+        operand1 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
+        operand2 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
+        answer = operand1 + operand2
         break
-      case '-':
-        a = Math.floor(Math.random() * 100) + 1
-        b = Math.floor(Math.random() * a) + 1
-        answer = a - b
+      
+      case 'subtraction':
+        operand1 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
+        operand2 = Math.floor(Math.random() * (operand1 - range.min + 1)) + range.min
+        answer = operand1 - operand2
         break
-      case '*':
-        a = Math.floor(Math.random() * 20) + 1
-        b = Math.floor(Math.random() * 20) + 1
-        answer = a * b
+      
+      case 'multiplication':
+        operand1 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
+        operand2 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
+        answer = operand1 * operand2
         break
-      case '/':
-        b = Math.floor(Math.random() * 12) + 1
-        answer = Math.floor(Math.random() * 20) + 1
-        a = b * answer
+      
+      case 'division':
+        answer = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
+        operand2 = Math.floor(Math.random() * 12) + 1
+        operand1 = answer * operand2
         break
+      
       default:
-        a = 1
-        b = 1
+        operand1 = 1
+        operand2 = 1
         answer = 2
     }
     
     return {
-      question: `${a} ${operator} ${b}`,
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      operation,
+      operand1,
+      operand2,
       answer,
-      operator
+      userAnswer: '',
+      isCorrect: null,
+      timeSpent: 0,
+      timestamp: Date.now()
     }
-  }
+  }, [settings])
 
   const startTest = () => {
-    setIsActive(true)
-    setScore(0)
-    setTimeLeft(60)
-    setCurrentProblemIndex(0)
+    setTestState('testing')
+    setTimeLeft(settings.duration)
+    setProblems([])
     setUserInput('')
+    testStartTimeRef.current = Date.now()
     
-    // Generate 100 problems
-    const newProblems = Array.from({ length: 100 }, () => generateProblem())
-    setProblems(newProblems)
-    setProblem(newProblems[0])
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    const firstProblem = generateProblem()
+    setCurrentProblem(firstProblem)
+    setProblemStartTime(Date.now())
     
-    if (parseInt(userInput) === problem.answer) {
-      setScore(prev => prev + 1)
-    }
-    
-    const nextIndex = currentProblemIndex + 1
-    if (nextIndex < problems.length) {
-      setCurrentProblemIndex(nextIndex)
-      setProblem(problems[nextIndex])
-    } else {
-      // Generate more problems if needed
-      const newProblem = generateProblem()
-      setProblem(newProblem)
-      setProblems(prev => [...prev, newProblem])
-      setCurrentProblemIndex(prev => prev + 1)
-    }
-    
-    setUserInput('')
+    setTimeout(() => inputRef.current?.focus(), 100)
   }
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
+    let interval: NodeJS.Timeout
     
-    if (isActive && timeLeft > 0) {
+    if (testState === 'testing' && timeLeft > 0) {
       interval = setInterval(() => {
-        setTimeLeft(timeLeft => timeLeft - 1)
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            finishTest()
+            return 0
+          }
+          return prev - 1
+        })
       }, 1000)
-    } else if (timeLeft === 0) {
-      setIsActive(false)
     }
     
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isActive, timeLeft])
+    return () => clearInterval(interval)
+  }, [testState, timeLeft])
 
-  if (!isActive && timeLeft === 60) {
+  const submitAnswer = () => {
+    if (!currentProblem || userInput.trim() === '') return
+    
+    const timeSpent = Date.now() - problemStartTime
+    const userAnswer = userInput.trim()
+    const isCorrect = parseInt(userAnswer) === currentProblem.answer
+    
+    const completedProblem: Problem = {
+      ...currentProblem,
+      userAnswer,
+      isCorrect,
+      timeSpent
+    }
+    
+    setProblems(prev => [...prev, completedProblem])
+    
+    if (testState === 'testing') {
+      const nextProblem = generateProblem()
+      setCurrentProblem(nextProblem)
+      setProblemStartTime(Date.now())
+      setUserInput('')
+      
+      if (settings.autoAdvance) {
+        setTimeout(() => inputRef.current?.focus(), 50)
+      }
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setUserInput(value)
+    
+    if (settings.autoAdvance && value.length > 0 && currentProblem) {
+      const possibleAnswer = parseInt(value)
+      if (!isNaN(possibleAnswer) && value.length >= currentProblem.answer.toString().length) {
+        setTimeout(submitAnswer, 100)
+      }
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      submitAnswer()
+    }
+  }
+
+  const finishTest = () => {
+    if (currentProblem && userInput.trim()) {
+      submitAnswer()
+    }
+    setTestState('finished')
+  }
+
+  const getOperationSymbol = (operation: string) => {
+    switch (operation) {
+      case 'addition': return '+'
+      case 'subtraction': return '−'
+      case 'multiplication': return '×'
+      case 'division': return '÷'
+      default: return '?'
+    }
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  if (loading) {
     return (
-      <div className="test-container flex flex-col items-center justify-center">
+      <div className="test-container flex items-center justify-center min-h-screen">
+        <div className="text-text-secondary">Loading...</div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="test-container flex flex-col items-center justify-center min-h-screen">
         <h1 className="text-4xl font-bold mb-8 text-accent">Math Speed Test</h1>
         <p className="text-lg text-text-secondary mb-8 text-center max-w-md">
-          Solve as many arithmetic problems as you can in 60 seconds!
+          Please log in to access the math speed test and track your progress.
         </p>
-        <button onClick={startTest} className="btn-primary text-xl px-8 py-4">
-          Start Test
+        <button 
+          onClick={() => router.push('/login')}
+          className="btn-primary text-xl px-8 py-4"
+        >
+          Login to Continue
         </button>
       </div>
     )
   }
 
-  if (!isActive && timeLeft === 0) {
+  if (testState === 'setup') {
     return (
-      <div className="test-container flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold mb-4 text-accent">Test Complete!</h1>
-        <div className="text-6xl font-bold mb-8 text-correct">{score}</div>
-        <p className="text-lg text-text-secondary mb-8">Problems solved correctly</p>
-        <button onClick={startTest} className="btn-primary">
-          Try Again
-        </button>
+      <div className="test-container p-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold mb-8 text-accent text-center">Math Speed Test</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div className="stats-card">
+              <h2 className="text-2xl font-semibold mb-4">Test Settings</h2>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Duration</label>
+                <select
+                  value={settings.duration}
+                  onChange={(e) => setSettings(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+                  className="w-full px-3 py-2 bg-bg-secondary border border-gray-600 rounded text-text-primary"
+                >
+                  <option value={60}>1 minute</option>
+                  <option value={120}>2 minutes</option>
+                  <option value={180}>3 minutes</option>
+                  <option value={300}>5 minutes</option>
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Operations</label>
+                <div className="space-y-2">
+                  {(['addition', 'subtraction', 'multiplication', 'division'] as const).map(op => (
+                    <label key={op} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={settings.operations.includes(op)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSettings(prev => ({ 
+                              ...prev, 
+                              operations: [...prev.operations, op] 
+                            }))
+                          } else {
+                            setSettings(prev => ({ 
+                              ...prev, 
+                              operations: prev.operations.filter(o => o !== op) 
+                            }))
+                          }
+                        }}
+                        className="mr-2 accent-accent"
+                      />
+                      <span className="capitalize">{op}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={settings.autoAdvance}
+                    onChange={(e) => setSettings(prev => ({ ...prev, autoAdvance: e.target.checked }))}
+                    className="mr-2 accent-accent"
+                  />
+                  <span>Auto-advance to next problem</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="stats-card">
+              <h2 className="text-2xl font-semibold mb-4">Test Preview</h2>
+              <div className="space-y-3">
+                <p><strong>Duration:</strong> {formatTime(settings.duration)}</p>
+                <p><strong>Operations:</strong> {settings.operations.join(', ')}</p>
+                <p><strong>Auto-advance:</strong> {settings.autoAdvance ? 'On' : 'Off'}</p>
+              </div>
+              
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Sample Problems:</h3>
+                <div className="space-y-2 text-2xl font-mono">
+                  <div>12 + 8 = ?</div>
+                  <div>15 − 7 = ?</div>
+                  <div>6 × 4 = ?</div>
+                  <div>48 ÷ 6 = ?</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <button
+              onClick={startTest}
+              disabled={settings.operations.length === 0}
+              className="btn-primary text-2xl px-12 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Start Test
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
 
-  return (
-    <div className="test-container flex flex-col items-center justify-center p-8">
-      <div className="mb-8 flex gap-8 text-xl">
-        <div>Time: <span className="text-accent font-bold">{timeLeft}s</span></div>
-        <div>Score: <span className="text-correct font-bold">{score}</span></div>
+  if (testState === 'testing') {
+    const correctAnswers = problems.filter(p => p.isCorrect).length
+    
+    return (
+      <div className="test-container flex flex-col items-center justify-center min-h-screen p-8">
+        <div className="flex gap-8 mb-12 text-xl">
+          <div className="flex items-center">
+            <span className="text-text-secondary mr-2">Time:</span>
+            <span className={`font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-accent'}`}>
+              {formatTime(timeLeft)}
+            </span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-text-secondary mr-2">Score:</span>
+            <span className="font-bold text-correct">{correctAnswers}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-text-secondary mr-2">Problems:</span>
+            <span className="font-bold text-text-primary">{problems.length}</span>
+          </div>
+        </div>
+
+        {currentProblem && (
+          <div className="text-center mb-12">
+            <div className="problem-display mb-8">
+              {currentProblem.operand1} {getOperationSymbol(currentProblem.operation)} {currentProblem.operand2} = ?
+            </div>
+            
+            <div className="max-w-xs mx-auto">
+              <input
+                ref={inputRef}
+                type="number"
+                value={userInput}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                className="answer-input"
+                placeholder="Your answer"
+                autoFocus
+              />
+            </div>
+            
+            {!settings.autoAdvance && (
+              <button
+                onClick={submitAnswer}
+                className="btn-primary mt-6 px-8 py-3"
+                disabled={!userInput.trim()}
+              >
+                Submit Answer
+              </button>
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-2 mt-8">
+          {problems.slice(-10).map((problem) => (
+            <div
+              key={problem.id}
+              className={`w-4 h-4 rounded-full ${
+                problem.isCorrect ? 'bg-correct' : 'bg-incorrect'
+              }`}
+              title={`${problem.operand1} ${getOperationSymbol(problem.operation)} ${problem.operand2} = ${problem.answer} (you: ${problem.userAnswer})`}
+            />
+          ))}
+        </div>
       </div>
-      
-      <div className="problem-display mb-8">
-        {problem.question} = ?
+    )
+  }
+
+  if (testState === 'finished') {
+    const correctAnswers = problems.filter(p => p.isCorrect).length
+    const accuracy = problems.length > 0 ? (correctAnswers / problems.length) * 100 : 0
+
+    return (
+      <div className="test-container p-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-8 text-accent">Test Complete!</h1>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+            <div className="stats-card">
+              <div className="text-4xl font-bold text-correct mb-2">{correctAnswers}</div>
+              <div className="text-text-secondary">Correct</div>
+            </div>
+            <div className="stats-card">
+              <div className="text-4xl font-bold text-accent mb-2">{Math.round(accuracy)}%</div>
+              <div className="text-text-secondary">Accuracy</div>
+            </div>
+            <div className="stats-card">
+              <div className="text-4xl font-bold text-text-primary mb-2">{Math.round((correctAnswers / (settings.duration / 60)))}</div>
+              <div className="text-text-secondary">PPM</div>
+            </div>
+            <div className="stats-card">
+              <div className="text-4xl font-bold text-text-primary mb-2">{problems.length}</div>
+              <div className="text-text-secondary">Total</div>
+            </div>
+          </div>
+
+          <div className="flex gap-4 justify-center mb-8">
+            <button
+              onClick={() => setTestState('setup')}
+              className="btn-primary px-8 py-3"
+            >
+              Test Again
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="btn-secondary px-8 py-3"
+            >
+              Home
+            </button>
+          </div>
+
+          <div className="stats-card text-left">
+            <h2 className="text-2xl font-semibold mb-4 text-center">Problem Review</h2>
+            <div className="max-h-64 overflow-y-auto">
+              <div className="grid gap-2">
+                {problems.map((problem) => (
+                  <div
+                    key={problem.id}
+                    className={`flex justify-between items-center p-2 rounded ${
+                      problem.isCorrect ? 'bg-green-900/20' : 'bg-red-900/20'
+                    }`}
+                  >
+                    <span className="font-mono">
+                      {problem.operand1} {getOperationSymbol(problem.operation)} {problem.operand2} = {problem.answer}
+                    </span>
+                    <span className={`font-mono ${problem.isCorrect ? 'text-correct' : 'text-incorrect'}`}>
+                      You: {problem.userAnswer}
+                    </span>
+                    <span className="text-text-secondary text-sm">
+                      {(problem.timeSpent / 1000).toFixed(1)}s
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <form onSubmit={handleSubmit} className="flex flex-col items-center">
-        <input
-          type="number"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          className="answer-input mb-8 max-w-xs"
-          placeholder="Your answer"
-          autoFocus
-        />
-        <button type="submit" className="btn-primary">
-          Submit
-        </button>
-      </form>
-    </div>
-  )
+    )
+  }
+
+  return null
 }
