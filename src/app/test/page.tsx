@@ -165,6 +165,13 @@ export default function MathTest() {
     const userAnswer = userInput.trim()
     const isCorrect = parseInt(userAnswer) === currentProblem.answer
     
+    // Only advance if the answer is correct
+    if (!isCorrect) {
+      setUserInput('') // Clear input for wrong answer
+      setTimeout(() => inputRef.current?.focus(), 50)
+      return
+    }
+    
     const completedProblem: Problem = {
       ...currentProblem,
       userAnswer,
@@ -192,7 +199,8 @@ export default function MathTest() {
     
     if (settings.autoAdvance && value.length > 0 && currentProblem) {
       const possibleAnswer = parseInt(value)
-      if (!isNaN(possibleAnswer) && value.length >= currentProblem.answer.toString().length) {
+      // Only auto-advance on correct answer
+      if (!isNaN(possibleAnswer) && possibleAnswer === currentProblem.answer) {
         setTimeout(submitAnswer, 100)
       }
     }
@@ -269,6 +277,7 @@ export default function MathTest() {
                   value={settings.duration}
                   onChange={(e) => setSettings(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
                   className="w-full px-3 py-2 bg-bg-secondary border border-gray-600 rounded text-text-primary"
+                  title="Select test duration"
                 >
                   <option value={60}>1 minute</option>
                   <option value={120}>2 minutes</option>
