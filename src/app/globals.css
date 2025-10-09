@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap');
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 26, 26, 26;
+  --background-end-rgb: 26, 26, 26;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  font-family: 'Fira Code', monospace;
+}
+
+/* MonkeyType-inspired styling */
+.test-container {
+  @apply min-h-screen bg-bg-primary text-text-primary;
+}
+
+.problem-display {
+  @apply text-6xl font-mono text-center mb-8 text-text-primary;
+}
+
+.answer-input {
+  @apply text-4xl font-mono bg-transparent border-none outline-none text-center w-full;
+}
+
+.stats-card {
+  @apply bg-bg-secondary rounded-lg p-4 text-center;
+}
+
+.btn-primary {
+  @apply bg-accent text-black px-6 py-2 rounded font-semibold hover:bg-yellow-500 transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-bg-secondary text-text-primary px-6 py-2 rounded font-semibold hover:bg-gray-600 transition-colors;
+}
