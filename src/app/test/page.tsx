@@ -554,7 +554,7 @@ export default function MathTest() {
                 Continue as Guest
               </button>
               <p className="text-xs text-text-secondary opacity-60 text-center mt-2">
-                (your progress won't be saved 😢)
+                (your progress won&apos;t be saved 😢)
               </p>
             </div>
           </div>
