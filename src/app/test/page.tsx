@@ -3,8 +3,28 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
+// Theme and font constants (simplified from settings page)
+const THEMES = [
+  { id: 'dark', name: 'Dark (Default)', colors: { primary: '#1a1a1a', secondary: '#2a2a2a', accent: '#ffd700', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#ffffff', textSecondary: '#b8b8b8' }},
+  { id: 'light', name: 'Light', colors: { primary: '#ffffff', secondary: '#f5f5f5', accent: '#0066cc', correct: '#00aa00', incorrect: '#cc0000', textPrimary: '#000000', textSecondary: '#666666' }},
+  { id: 'serika', name: 'Serika', colors: { primary: '#323437', secondary: '#2c2e31', accent: '#e2b714', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#d1d0c5', textSecondary: '#646669' }},
+  { id: 'monokai', name: 'Monokai', colors: { primary: '#272822', secondary: '#383830', accent: '#a6e22e', correct: '#a6e22e', incorrect: '#f92672', textPrimary: '#f8f8f2', textSecondary: '#75715e' }},
+  { id: 'dracula', name: 'Dracula', colors: { primary: '#282a36', secondary: '#44475a', accent: '#ff79c6', correct: '#50fa7b', incorrect: '#ff5555', textPrimary: '#f8f8f2', textSecondary: '#6272a4' }},
+  { id: 'nord', name: 'Nord', colors: { primary: '#2e3440', secondary: '#3b4252', accent: '#88c0d0', correct: '#a3be8c', incorrect: '#bf616a', textPrimary: '#eceff4', textSecondary: '#d8dee9' }},
+]
+
+const FONTS = [
+  { id: 'jetbrains', name: 'JetBrains Mono', family: 'JetBrains Mono, monospace' },
+  { id: 'fira', name: 'Fira Code', family: 'Fira Code, monospace' },
+  { id: 'source', name: 'Source Code Pro', family: 'Source Code Pro, monospace' },
+  { id: 'roboto', name: 'Roboto Mono', family: 'Roboto Mono, monospace' },
+  { id: 'inter', name: 'Inter', family: 'Inter, sans-serif' },
+  { id: 'arial', name: 'Arial', family: 'Arial, sans-serif' },
+]
+
 interface TestSettings {
   duration: number
+  difficulty: 'easy' | 'medium' | 'hard' | 'abstract'
   operations: ('addition' | 'subtraction' | 'multiplication' | 'division')[]
   ranges: {
     addition: { min: number, max: number }
@@ -13,6 +33,7 @@ interface TestSettings {
     division: { min: number, max: number }
   }
   autoAdvance: boolean
+  abstractTimeLimit?: number
 }
 
 interface Problem {
@@ -29,6 +50,7 @@ interface Problem {
 
 const DEFAULT_SETTINGS: TestSettings = {
   duration: 120,
+  difficulty: 'medium',
   operations: ['addition', 'subtraction', 'multiplication', 'division'],
   ranges: {
     addition: { min: 1, max: 99 },
@@ -54,6 +76,8 @@ export default function MathTest() {
   const [problemStartTime, setProblemStartTime] = useState(0)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
+  const [abstractModeTimer, setAbstractModeTimer] = useState<number | null>(null)
+  const [userPreferences, setUserPreferences] = useState<any>(null)
   
   const inputRef = useRef<HTMLInputElement>(null)
   const testStartTimeRef = useRef(0)
@@ -61,6 +85,35 @@ export default function MathTest() {
   useEffect(() => {
     checkAuthStatus()
   }, [])
+
+  // Load user preferences
+  useEffect(() => {
+    const loadPreferences = async () => {
+      if (isAuthenticated) {
+        try {
+          const response = await fetch('/api/user/preferences')
+          if (response.ok) {
+            const data = await response.json()
+            setUserPreferences(data.preferences)
+            applyTheme(data.preferences?.theme || 'monokai')
+            applyFont(data.preferences?.font || 'JetBrains Mono')
+          }
+        } catch (error) {
+          console.error('Failed to load preferences:', error)
+        }
+      } else {
+        // Load from localStorage for guests
+        const savedTheme = localStorage.getItem('selectedTheme') || 'monokai'
+        const savedFont = localStorage.getItem('selectedFont') || 'JetBrains Mono'
+        applyTheme(savedTheme)
+        applyFont(savedFont)
+      }
+    }
+    
+    if (loading === false) {
+      loadPreferences()
+    }
+  }, [isAuthenticated, loading])
 
   const checkAuthStatus = async () => {
     try {
@@ -75,6 +128,71 @@ export default function MathTest() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const getDifficultyRanges = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy':
+        return {
+          addition: { min: 1, max: 20 },
+          subtraction: { min: 1, max: 20 },
+          multiplication: { min: 1, max: 5 },
+          division: { min: 1, max: 25 }
+        }
+      case 'hard':
+        return {
+          addition: { min: 10, max: 999 },
+          subtraction: { min: 10, max: 999 },
+          multiplication: { min: 1, max: 25 },
+          division: { min: 1, max: 625 }
+        }
+      case 'abstract':
+        return {
+          addition: { min: 50, max: 9999 },
+          subtraction: { min: 50, max: 9999 },
+          multiplication: { min: 10, max: 99 },
+          division: { min: 1, max: 9801 }
+        }
+      default: // medium
+        return {
+          addition: { min: 1, max: 99 },
+          subtraction: { min: 1, max: 99 },
+          multiplication: { min: 1, max: 12 },
+          division: { min: 1, max: 144 }
+        }
+    }
+  }
+
+  const setDifficulty = (difficulty: 'easy' | 'medium' | 'hard' | 'abstract') => {
+    const ranges = getDifficultyRanges(difficulty)
+    setSettings(prev => ({
+      ...prev,
+      difficulty,
+      ranges,
+      abstractTimeLimit: difficulty === 'abstract' ? 4 : undefined
+    }))
+  }
+
+  const applyTheme = (themeId: string) => {
+    const theme = THEMES.find(t => t.id === themeId)
+    if (!theme) return
+
+    const root = document.documentElement
+    root.style.setProperty('--bg-primary', theme.colors.primary)
+    root.style.setProperty('--bg-secondary', theme.colors.secondary)
+    root.style.setProperty('--text-primary', theme.colors.textPrimary)
+    root.style.setProperty('--text-secondary', theme.colors.textSecondary)
+    root.style.setProperty('--accent', theme.colors.accent)
+    root.style.setProperty('--correct', theme.colors.correct)
+    root.style.setProperty('--incorrect', theme.colors.incorrect)
+  }
+
+  const applyFont = (fontId: string) => {
+    const font = FONTS.find(f => f.id === fontId)
+    if (!font) return
+
+    const root = document.documentElement
+    root.style.setProperty('--font-family', font.family)
   }
 
   const generateProblem = useCallback((): Problem => {
@@ -139,6 +257,11 @@ export default function MathTest() {
     setCurrentProblem(firstProblem)
     setProblemStartTime(Date.now())
     
+    // Abstract mode: auto-generate new problem after time limit
+    if (settings.difficulty === 'abstract' && settings.abstractTimeLimit) {
+      setAbstractModeTimer(settings.abstractTimeLimit)
+    }
+    
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 
@@ -159,6 +282,30 @@ export default function MathTest() {
     
     return () => clearInterval(interval)
   }, [testState, timeLeft]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Abstract mode timer effect
+  useEffect(() => {
+    let abstractInterval: NodeJS.Timeout
+    
+    if (settings.difficulty === 'abstract' && abstractModeTimer && abstractModeTimer > 0 && testState === 'testing') {
+      abstractInterval = setInterval(() => {
+        setAbstractModeTimer(prev => {
+          if (prev && prev <= 1) {
+            // Time's up! Generate new problem
+            const nextProblem = generateProblem()
+            setCurrentProblem(nextProblem)
+            setProblemStartTime(Date.now())
+            setUserInput('')
+            setTimeout(() => inputRef.current?.focus(), 50)
+            return settings.abstractTimeLimit || 4
+          }
+          return prev ? prev - 1 : null
+        })
+      }, 1000)
+    }
+    
+    return () => clearInterval(abstractInterval)
+  }, [settings.difficulty, abstractModeTimer, testState, settings.abstractTimeLimit, generateProblem])
 
   const submitAnswer = () => {
     if (!currentProblem || userInput.trim() === '') return
@@ -182,6 +329,11 @@ export default function MathTest() {
       setCurrentProblem(nextProblem)
       setProblemStartTime(Date.now())
       setUserInput('')
+      
+      // Abstract mode: auto-generate new problem after time limit
+      if (settings.difficulty === 'abstract' && settings.abstractTimeLimit) {
+        setAbstractModeTimer(settings.abstractTimeLimit)
+      }
       
       setTimeout(() => inputRef.current?.focus(), 50)
     } else if (!isCorrect) {
@@ -379,64 +531,81 @@ export default function MathTest() {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-8 text-accent text-center">Math Speed Test</h1>
           
+          {/* Time Selection - MonkeyType Style */}
+          <div className="mb-8 text-center">
+            <div className="text-lg font-medium mb-4 text-text-secondary">time</div>
+            <div className="flex justify-center gap-4 mb-6">
+              {[15, 30, 60, 120].map(time => (
+                <button
+                  key={time}
+                  onClick={() => setSettings(prev => ({ ...prev, duration: time }))}
+                  className={`px-4 py-2 rounded transition-colors ${
+                    settings.duration === time 
+                      ? 'bg-accent text-black font-bold' 
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  {time < 60 ? `${time}s` : `${time / 60}m`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Difficulty Selection - MonkeyType Style */}
+          <div className="mb-8 text-center">
+            <div className="text-lg font-medium mb-4 text-text-secondary">difficulty</div>
+            <div className="flex justify-center gap-4 mb-6">
+              {(['easy', 'medium', 'hard', 'abstract'] as const).map(diff => (
+                <button
+                  key={diff}
+                  onClick={() => setDifficulty(diff)}
+                  className={`px-4 py-2 rounded transition-colors ${
+                    settings.difficulty === diff 
+                      ? 'bg-accent text-black font-bold' 
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  {diff}
+                  {diff === 'abstract' && <span className="text-xs ml-1">⚡</span>}
+                </button>
+              ))}
+            </div>
+            <div className="text-sm text-text-secondary opacity-75 max-w-md mx-auto">
+              {settings.difficulty === 'easy' && 'Small numbers, simple operations'}
+              {settings.difficulty === 'medium' && 'Standard ZetaMac ranges'}
+              {settings.difficulty === 'hard' && 'Large numbers, complex calculations'}
+              {settings.difficulty === 'abstract' && 'Hard problems that change every 4 seconds!'}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div className="stats-card">
-              <h2 className="text-2xl font-semibold mb-4">Test Settings</h2>
+              <h2 className="text-2xl font-semibold mb-4">Operations</h2>
               
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Duration</label>
-                <select
-                  value={settings.duration}
-                  onChange={(e) => setSettings(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
-                  className="w-full px-3 py-2 bg-bg-secondary border border-gray-600 rounded text-text-primary"
-                  title="Select test duration"
-                >
-                  <option value={60}>1 minute</option>
-                  <option value={120}>2 minutes</option>
-                  <option value={180}>3 minutes</option>
-                  <option value={300}>5 minutes</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Operations</label>
-                <div className="space-y-2">
-                  {(['addition', 'subtraction', 'multiplication', 'division'] as const).map(op => (
-                    <label key={op} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={settings.operations.includes(op)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSettings(prev => ({ 
-                              ...prev, 
-                              operations: [...prev.operations, op] 
-                            }))
-                          } else {
-                            setSettings(prev => ({ 
-                              ...prev, 
-                              operations: prev.operations.filter(o => o !== op) 
-                            }))
-                          }
-                        }}
-                        className="mr-2 accent-accent"
-                      />
-                      <span className="capitalize">{op}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.autoAdvance}
-                    onChange={(e) => setSettings(prev => ({ ...prev, autoAdvance: e.target.checked }))}
-                    className="mr-2 accent-accent"
-                  />
-                  <span>Auto-advance to next problem</span>
-                </label>
+              <div className="space-y-3">
+                {(['addition', 'subtraction', 'multiplication', 'division'] as const).map(op => (
+                  <label key={op} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={settings.operations.includes(op)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSettings(prev => ({ 
+                            ...prev, 
+                            operations: [...prev.operations, op] 
+                          }))
+                        } else {
+                          setSettings(prev => ({ 
+                            ...prev, 
+                            operations: prev.operations.filter(o => o !== op) 
+                          }))
+                        }
+                      }}
+                      className="mr-3 accent-accent"
+                    />
+                    <span className="capitalize text-lg">{op}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -444,17 +613,48 @@ export default function MathTest() {
               <h2 className="text-2xl font-semibold mb-4">Test Preview</h2>
               <div className="space-y-3">
                 <p><strong>Duration:</strong> {formatTime(settings.duration)}</p>
+                <p><strong>Difficulty:</strong> <span className="capitalize">{settings.difficulty}</span></p>
                 <p><strong>Operations:</strong> {settings.operations.join(', ')}</p>
-                <p><strong>Auto-advance:</strong> {settings.autoAdvance ? 'On' : 'Off'}</p>
+                {settings.difficulty === 'abstract' && (
+                  <p className="text-accent"><strong>⚡ Abstract Mode:</strong> Problems change every {settings.abstractTimeLimit}s!</p>
+                )}
               </div>
               
               <div className="mt-6">
                 <h3 className="text-lg font-semibold mb-2">Sample Problems:</h3>
                 <div className="space-y-2 text-2xl font-mono">
-                  <div>12 + 8 = ?</div>
-                  <div>15 − 7 = ?</div>
-                  <div>6 × 4 = ?</div>
-                  <div>48 ÷ 6 = ?</div>
+                  {settings.difficulty === 'easy' && (
+                    <>
+                      <div>4 + 7 = ?</div>
+                      <div>15 − 8 = ?</div>
+                      <div>3 × 4 = ?</div>
+                      <div>20 ÷ 4 = ?</div>
+                    </>
+                  )}
+                  {settings.difficulty === 'medium' && (
+                    <>
+                      <div>32 + 47 = ?</div>
+                      <div>85 − 29 = ?</div>
+                      <div>7 × 9 = ?</div>
+                      <div>72 ÷ 8 = ?</div>
+                    </>
+                  )}
+                  {settings.difficulty === 'hard' && (
+                    <>
+                      <div>247 + 389 = ?</div>
+                      <div>834 − 567 = ?</div>
+                      <div>17 × 23 = ?</div>
+                      <div>476 ÷ 17 = ?</div>
+                    </>
+                  )}
+                  {settings.difficulty === 'abstract' && (
+                    <>
+                      <div>1847 + 2593 = ?</div>
+                      <div>7834 − 3967 = ?</div>
+                      <div>47 × 83 = ?</div>
+                      <div>3481 ÷ 59 = ?</div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -487,6 +687,14 @@ export default function MathTest() {
               {formatTime(timeLeft)}
             </span>
           </div>
+          {settings.difficulty === 'abstract' && abstractModeTimer && (
+            <div className="flex items-center">
+              <span className="text-text-secondary mr-2">Problem:</span>
+              <span className={`font-bold ${abstractModeTimer <= 2 ? 'text-red-500' : 'text-accent'}`}>
+                {abstractModeTimer}s
+              </span>
+            </div>
+          )}
           <div className="flex items-center">
             <span className="text-text-secondary mr-2">Score:</span>
             <span className="font-bold text-correct">{correctAnswers}</span>
