@@ -489,50 +489,25 @@ export default function SettingsPage() {
             Choose a font family for the typing test and interface
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="flex flex-wrap gap-3">
             {FONTS.map((font) => (
-              <div
+              <button
                 key={font.id}
-                className={`cursor-pointer p-4 rounded-lg border-2 transition-all duration-200 bg-bg-secondary ${
+                className={`px-4 py-2 rounded-lg border-2 transition-all duration-200 bg-bg-secondary hover:bg-gray-700 ${
                   currentFont === font.id 
-                    ? 'border-accent scale-105' 
+                    ? 'border-accent' 
                     : 'border-gray-600 hover:border-gray-400'
                 }`}
                 onClick={() => handleFontChange(font.id)}
+                style={{ fontFamily: font.family }}
               >
-                <div className="text-center">
-                  <h3 className="text-sm font-semibold mb-3 text-text-primary">
-                    {font.name}
-                  </h3>
-                  
-                  {/* Font preview */}
-                  <div 
-                    className="text-lg mb-2 text-text-primary"
-                    style={{ fontFamily: font.family }}
-                  >
-                    Aa 123
-                  </div>
-                  
-                  <div 
-                    className="text-xs text-text-secondary mb-3"
-                    style={{ fontFamily: font.family }}
-                  >
-                    The quick brown fox
-                  </div>
-                  
-                  <div className="text-xs text-text-secondary capitalize">
-                    {font.category}
-                  </div>
-
-                  {currentFont === font.id && (
-                    <div className="mt-3 text-center">
-                      <div className="text-xs font-bold px-2 py-1 rounded-full bg-accent text-black">
-                        ACTIVE
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+                <span className="text-text-primary text-sm">
+                  {font.name}
+                </span>
+                {currentFont === font.id && (
+                  <span className="ml-2 text-accent text-xs">✓</span>
+                )}
+              </button>
             ))}
           </div>
         </div>
