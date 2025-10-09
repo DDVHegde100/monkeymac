@@ -114,7 +114,50 @@ const THEMES: Theme[] = [
   { id: 'cotton-candy', name: 'Cotton Candy', colors: { primary: '#ffb3d9', secondary: '#ff99cc', accent: '#ff66b3', correct: '#66ff99', incorrect: '#ff6666', textPrimary: '#660033', textSecondary: '#990066' }},
   { id: 'midnight-oil', name: 'Midnight Oil', colors: { primary: '#0d1020', secondary: '#1a2040', accent: '#ffa500', correct: '#32cd32', incorrect: '#dc143c', textPrimary: '#f0f8ff', textSecondary: '#b0c4de' }},
   { id: 'golden-hour', name: 'Golden Hour', colors: { primary: '#2c1810', secondary: '#4a2c18', accent: '#ffa500', correct: '#32cd32', incorrect: '#dc143c', textPrimary: '#ffd700', textSecondary: '#daa520' }},
-  { id: 'lavender-mist', name: 'Lavender Mist', colors: { primary: '#e6e6fa', secondary: '#dda0dd', accent: '#9370db', correct: '#32cd32', incorrect: '#dc143c', textPrimary: '#4b0082', textSecondary: '#663399' }}
+  { id: 'lavender-mist', name: 'Lavender Mist', colors: { primary: '#e6e6fa', secondary: '#dda0dd', accent: '#9370db', correct: '#32cd32', incorrect: '#dc143c', textPrimary: '#4b0082', textSecondary: '#663399' }},
+  
+  // Extended theme collection
+  { id: 'midnight-blue', name: 'Midnight Blue', colors: { primary: '#191970', secondary: '#25258a', accent: '#87ceeb', correct: '#00ff7f', incorrect: '#ff4500', textPrimary: '#f0f8ff', textSecondary: '#b0c4de' }},
+  { id: 'crimson-red', name: 'Crimson Red', colors: { primary: '#8b0000', secondary: '#a52a2a', accent: '#dc143c', correct: '#32cd32', incorrect: '#ff6347', textPrimary: '#ffe4e1', textSecondary: '#ffc0cb' }},
+  { id: 'emerald-green', name: 'Emerald Green', colors: { primary: '#006400', secondary: '#228b22', accent: '#00ff7f', correct: '#98fb98', incorrect: '#ff0000', textPrimary: '#f0fff0', textSecondary: '#90ee90' }},
+  { id: 'royal-purple', name: 'Royal Purple', colors: { primary: '#4b0082', secondary: '#663399', accent: '#9370db', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#e6e6fa', textSecondary: '#dda0dd' }},
+  { id: 'sunset-orange', name: 'Sunset Orange', colors: { primary: '#ff4500', secondary: '#ff6347', accent: '#ffa500', correct: '#32cd32', incorrect: '#dc143c', textPrimary: '#fff8dc', textSecondary: '#ffe4b5' }},
+  { id: 'arctic-white', name: 'Arctic White', colors: { primary: '#f8f8ff', secondary: '#f5f5f5', accent: '#4169e1', correct: '#228b22', incorrect: '#dc143c', textPrimary: '#2f4f4f', textSecondary: '#696969' }},
+  { id: 'deep-space', name: 'Deep Space', colors: { primary: '#000000', secondary: '#1c1c1c', accent: '#00bfff', correct: '#00ff00', incorrect: '#ff1493', textPrimary: '#ffffff', textSecondary: '#c0c0c0' }},
+  { id: 'forest-green', name: 'Forest Green', colors: { primary: '#2e8b57', secondary: '#3cb371', accent: '#90ee90', correct: '#98fb98', incorrect: '#ff0000', textPrimary: '#f0fff0', textSecondary: '#90ee90' }},
+  { id: 'steel-gray', name: 'Steel Gray', colors: { primary: '#2f4f4f', secondary: '#696969', accent: '#b0c4de', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#f5f5f5', textSecondary: '#dcdcdc' }},
+  { id: 'rose-gold', name: 'Rose Gold', colors: { primary: '#b76e79', secondary: '#d4a5a5', accent: '#e91e63', correct: '#4caf50', incorrect: '#f44336', textPrimary: '#ffffff', textSecondary: '#f8bbd9' }},
+  
+  // Coffee & Earth tones
+  { id: 'espresso', name: 'Espresso', colors: { primary: '#3c2414', secondary: '#5d4037', accent: '#8d6e63', correct: '#4caf50', incorrect: '#f44336', textPrimary: '#d7ccc8', textSecondary: '#a1887f' }},
+  { id: 'cappuccino', name: 'Cappuccino', colors: { primary: '#6f4e37', secondary: '#8b4513', accent: '#deb887', correct: '#228b22', incorrect: '#b22222', textPrimary: '#f5deb3', textSecondary: '#d2b48c' }},
+  { id: 'mocha', name: 'Mocha', colors: { primary: '#704214', secondary: '#a0522d', accent: '#cd853f', correct: '#9acd32', incorrect: '#dc143c', textPrimary: '#faebd7', textSecondary: '#deb887' }},
+  { id: 'latte', name: 'Latte', colors: { primary: '#d2b48c', secondary: '#f5deb3', accent: '#8b4513', correct: '#228b22', incorrect: '#b22222', textPrimary: '#2f4f4f', textSecondary: '#696969' }},
+  
+  // Jewel tones
+  { id: 'sapphire', name: 'Sapphire', colors: { primary: '#082567', secondary: '#1e3a8a', accent: '#3b82f6', correct: '#10b981', incorrect: '#ef4444', textPrimary: '#dbeafe', textSecondary: '#93c5fd' }},
+  { id: 'ruby', name: 'Ruby', colors: { primary: '#7f1d1d', secondary: '#991b1b', accent: '#ef4444', correct: '#10b981', incorrect: '#b91c1c', textPrimary: '#fecaca', textSecondary: '#f87171' }},
+  { id: 'emerald', name: 'Emerald', colors: { primary: '#064e3b', secondary: '#065f46', accent: '#10b981', correct: '#22c55e', incorrect: '#ef4444', textPrimary: '#a7f3d0', textSecondary: '#6ee7b7' }},
+  { id: 'amethyst', name: 'Amethyst', colors: { primary: '#581c87', secondary: '#7c3aed', accent: '#a855f7', correct: '#10b981', incorrect: '#ef4444', textPrimary: '#e9d5ff', textSecondary: '#c4b5fd' }},
+  { id: 'topaz', name: 'Topaz', colors: { primary: '#92400e', secondary: '#b45309', accent: '#f59e0b', correct: '#10b981', incorrect: '#ef4444', textPrimary: '#fef3c7', textSecondary: '#fcd34d' }},
+  
+  // Neon variations
+  { id: 'cyber-pink', name: 'Cyber Pink', colors: { primary: '#0a0a0a', secondary: '#1a0a1a', accent: '#ff0077', correct: '#00ff88', incorrect: '#ff0044', textPrimary: '#ff88cc', textSecondary: '#cc44aa' }},
+  { id: 'laser-lime', name: 'Laser Lime', colors: { primary: '#0a0a0a', secondary: '#0a1a0a', accent: '#88ff00', correct: '#ccff44', incorrect: '#ff0044', textPrimary: '#ccff88', textSecondary: '#88cc44' }},
+  { id: 'electric-cyan', name: 'Electric Cyan', colors: { primary: '#0a0a0a', secondary: '#0a1a1a', accent: '#00ffff', correct: '#44ffcc', incorrect: '#ff0044', textPrimary: '#88ffff', textSecondary: '#44cccc' }},
+  { id: 'neon-yellow', name: 'Neon Yellow', colors: { primary: '#0a0a0a', secondary: '#1a1a0a', accent: '#ffff00', correct: '#88ff44', incorrect: '#ff0044', textPrimary: '#ffff88', textSecondary: '#cccc44' }},
+  
+  // Retro gaming
+  { id: 'gameboy', name: 'Game Boy', colors: { primary: '#9bbc0f', secondary: '#8bac0f', accent: '#306230', correct: '#0f380f', incorrect: '#9bbc0f', textPrimary: '#0f380f', textSecondary: '#306230' }},
+  { id: 'nintendo', name: 'Nintendo', colors: { primary: '#e60012', secondary: '#0066cc', accent: '#ffcc00', correct: '#00cc00', incorrect: '#cc0000', textPrimary: '#ffffff', textSecondary: '#cccccc' }},
+  { id: 'playstation', name: 'PlayStation', colors: { primary: '#003087', secondary: '#0070d1', accent: '#00d9ff', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#ffffff', textSecondary: '#b3e5fc' }},
+  { id: 'xbox', name: 'Xbox', colors: { primary: '#107c10', secondary: '#2d8f2d', accent: '#68cc6c', correct: '#84ff84', incorrect: '#ff0000', textPrimary: '#ffffff', textSecondary: '#c8f7c8' }},
+  
+  // Weather themes
+  { id: 'storm', name: 'Storm', colors: { primary: '#2c3e50', secondary: '#34495e', accent: '#f39c12', correct: '#27ae60', incorrect: '#e74c3c', textPrimary: '#ecf0f1', textSecondary: '#bdc3c7' }},
+  { id: 'sunny', name: 'Sunny', colors: { primary: '#f39c12', secondary: '#e67e22', accent: '#f1c40f', correct: '#27ae60', incorrect: '#e74c3c', textPrimary: '#2c3e50', textSecondary: '#7f8c8d' }},
+  { id: 'rainy', name: 'Rainy', colors: { primary: '#34495e', secondary: '#2c3e50', accent: '#3498db', correct: '#2ecc71', incorrect: '#e74c3c', textPrimary: '#ecf0f1', textSecondary: '#95a5a6' }},
+  { id: 'snowy', name: 'Snowy', colors: { primary: '#ecf0f1', secondary: '#bdc3c7', accent: '#3498db', correct: '#27ae60', incorrect: '#e74c3c', textPrimary: '#2c3e50', textSecondary: '#7f8c8d' }}
 ]
 
 export default function SettingsPage() {
@@ -198,18 +241,43 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="test-container p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-accent">Settings</h1>
-          <button
+    <div className="test-container">
+      {/* Navigation */}
+      <div className="flex justify-between items-center p-6 bg-bg-secondary">
+        <div className="flex items-center space-x-8">
+          <button 
             onClick={() => router.push('/')}
-            className="btn-secondary px-6 py-2"
+            className="text-2xl font-bold text-accent hover:text-yellow-400"
           >
-            Back to Home
+            MonkeyMac
           </button>
+          <nav className="flex space-x-6">
+            <button 
+              onClick={() => router.push('/test')}
+              className="text-text-primary hover:text-accent transition-colors"
+            >
+              Test
+            </button>
+            <span className="text-accent font-medium">Settings</span>
+          </nav>
         </div>
+        <button 
+          onClick={() => {
+            fetch('/api/auth/logout', { method: 'POST' })
+              .then(() => router.push('/'))
+          }}
+          className="btn-secondary py-1 px-4 text-sm"
+        >
+          Logout
+        </button>
+      </div>
+      
+      <div className="p-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-accent text-center">Settings</h1>
+          </div>
 
         {/* Theme Selection */}
         <div className="stats-card mb-8">
@@ -222,43 +290,71 @@ export default function SettingsPage() {
             {THEMES.map((theme) => (
               <div
                 key={theme.id}
-                className={`theme-card cursor-pointer p-3 rounded-lg border-2 transition-all duration-200 bg-bg-secondary ${
-                  currentTheme === theme.id 
-                    ? 'border-accent scale-105' 
-                    : 'border-gray-600 hover:border-gray-400'
+                className={`theme-card cursor-pointer p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
+                  currentTheme === theme.id ? 'scale-105 ring-2 ring-offset-2' : ''
                 }`}
+                style={{
+                  backgroundColor: theme.colors.primary,
+                  borderColor: currentTheme === theme.id ? theme.colors.accent : theme.colors.secondary,
+                  color: theme.colors.textPrimary,
+                  borderWidth: currentTheme === theme.id ? '3px' : '2px'
+                }}
                 onClick={() => handleThemeChange(theme.id)}
               >
-                <h3 className="text-xs font-semibold mb-2 truncate text-text-primary">
-                  {theme.name}
-                </h3>
-                
-                {/* Color Palette Preview - simplified without inline styles */}
-                <div className="flex gap-1 mb-2 justify-center">
-                  <div className="w-3 h-3 rounded-full bg-bg-primary border border-gray-400" />
-                  <div className="w-3 h-3 rounded-full bg-bg-secondary border border-gray-400" />
-                  <div className="w-3 h-3 rounded-full bg-accent border border-gray-400" />
-                  <div className="w-3 h-3 rounded-full bg-correct border border-gray-400" />
-                  <div className="w-3 h-3 rounded-full bg-incorrect border border-gray-400" />
-                </div>
+                <div className="text-center">
+                  <h3 
+                    className="text-xs font-semibold mb-3 truncate"
+                    style={{ color: theme.colors.textPrimary }}
+                  >
+                    {theme.name}
+                  </h3>
+                  
 
-                {/* Mini Preview */}
-                <div className="text-xs space-y-1 text-center">
-                  <div className="text-text-primary">8+5=13</div>
-                  <div className="flex gap-2 items-center justify-center">
-                    <span className="text-correct">✓</span>
-                    <span className="text-incorrect">✗</span>
-                    <span className="text-accent">Mac</span>
+
+                  {/* Color palette dots */}
+                  <div className="flex gap-1 justify-center mb-2">
+                    <div 
+                      className="w-2 h-2 rounded-full border border-gray-500" 
+                      style={{ backgroundColor: theme.colors.primary }}
+                      title="Primary"
+                    />
+                    <div 
+                      className="w-2 h-2 rounded-full border border-gray-500" 
+                      style={{ backgroundColor: theme.colors.secondary }}
+                      title="Secondary"
+                    />
+                    <div 
+                      className="w-2 h-2 rounded-full border border-gray-500" 
+                      style={{ backgroundColor: theme.colors.accent }}
+                      title="Accent"
+                    />
+                    <div 
+                      className="w-2 h-2 rounded-full border border-gray-500" 
+                      style={{ backgroundColor: theme.colors.correct }}
+                      title="Correct"
+                    />
+                    <div 
+                      className="w-2 h-2 rounded-full border border-gray-500" 
+                      style={{ backgroundColor: theme.colors.incorrect }}
+                      title="Incorrect"
+                    />
                   </div>
-                </div>
 
-                {currentTheme === theme.id && (
-                  <div className="mt-2 text-center">
-                    <div className="text-xs font-bold px-2 py-1 rounded-full bg-accent text-black">
-                      ACTIVE
+                  {currentTheme === theme.id && (
+                    <div className="mt-2">
+                      <div 
+                        className="text-xs font-bold px-2 py-1 rounded-full border"
+                        style={{ 
+                          backgroundColor: theme.colors.accent,
+                          color: theme.colors.primary,
+                          borderColor: theme.colors.accent
+                        }}
+                      >
+                        ACTIVE
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -359,6 +455,7 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   )

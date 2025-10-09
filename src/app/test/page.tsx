@@ -263,9 +263,40 @@ export default function MathTest() {
 
   if (testState === 'setup') {
     return (
-      <div className="test-container p-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 text-accent text-center">Math Speed Test</h1>
+      <div className="test-container">
+        {/* Navigation */}
+        <div className="flex justify-between items-center p-6 bg-bg-secondary">
+          <div className="flex items-center space-x-8">
+            <button 
+              onClick={() => router.push('/')}
+              className="text-2xl font-bold text-accent hover:text-yellow-400"
+            >
+              MonkeyMac
+            </button>
+            <nav className="flex space-x-6">
+              <span className="text-accent font-medium">Test</span>
+              <button 
+                onClick={() => router.push('/settings')}
+                className="text-text-primary hover:text-accent transition-colors"
+              >
+                Settings
+              </button>
+            </nav>
+          </div>
+          <button 
+            onClick={() => {
+              fetch('/api/auth/logout', { method: 'POST' })
+                .then(() => router.push('/'))
+            }}
+            className="btn-secondary py-1 px-4 text-sm"
+          >
+            Logout
+          </button>
+        </div>
+        
+        <div className="p-8">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold mb-8 text-accent text-center">Math Speed Test</h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div className="stats-card">
@@ -356,6 +387,7 @@ export default function MathTest() {
             >
               Start Test
             </button>
+            </div>
           </div>
         </div>
       </div>

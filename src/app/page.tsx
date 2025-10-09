@@ -85,9 +85,21 @@ export default function HomePage() {
   return (
     <div className="test-container min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center p-6">
-        <div className="text-2xl font-bold text-accent">
-          MonkeyMac
+      <div className="flex justify-between items-center p-6 bg-bg-secondary">
+        <div className="flex items-center space-x-8">
+          <div className="text-2xl font-bold text-accent">
+            MonkeyMac
+          </div>
+          {user && (
+            <nav className="flex space-x-6">
+              <Link href="/test" className="text-text-primary hover:text-accent transition-colors">
+                Test
+              </Link>
+              <Link href="/settings" className="text-text-primary hover:text-accent transition-colors">
+                Settings
+              </Link>
+            </nav>
+          )}
         </div>
         <AuthButton />
       </div>
