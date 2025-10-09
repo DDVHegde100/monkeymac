@@ -52,6 +52,8 @@ export default function MathTest() {
   const [userInput, setUserInput] = useState('')
   const [timeLeft, setTimeLeft] = useState(120)
   const [problemStartTime, setProblemStartTime] = useState(0)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   
   const inputRef = useRef<HTMLInputElement>(null)
   const testStartTimeRef = useRef(0)
@@ -246,17 +248,85 @@ export default function MathTest() {
 
   if (!isAuthenticated) {
     return (
-      <div className="test-container flex flex-col items-center justify-center min-h-screen">
-        <h1 className="text-4xl font-bold mb-8 text-accent">Math Speed Test</h1>
-        <p className="text-lg text-text-secondary mb-8 text-center max-w-md">
-          Please log in to access the math speed test and track your progress.
-        </p>
-        <button 
-          onClick={() => router.push('/login')}
-          className="btn-primary text-xl px-8 py-4"
-        >
-          Login to Continue
-        </button>
+      <div className="test-container min-h-screen relative">
+        {/* Background Test Interface (Blurred) */}
+        <div className="absolute inset-0 filter blur-sm pointer-events-none">
+          <div className="flex justify-between items-center p-6 bg-bg-secondary">
+            <div className="text-2xl font-bold text-accent">MonkeyMac</div>
+          </div>
+          <div className="flex flex-col items-center justify-center px-8 pt-20">
+            <h1 className="text-4xl font-bold mb-8 text-accent text-center">Math Speed Test</h1>
+            <div className="text-6xl font-mono text-center mb-8 text-text-primary opacity-50">
+              12 + 7 = ?
+            </div>
+            <div className="flex gap-4 text-text-secondary">
+              <span>Time: 2:00</span>
+              <span>Score: 0</span>
+              <span>Problems: 0</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Auth Modal Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-bg-secondary rounded-lg p-8 max-w-md w-full border border-gray-600">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-accent mb-2">MonkeyMac</h2>
+              <p className="text-text-secondary">
+                Mental math training with MonkeyType styling
+              </p>
+            </div>
+            
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setAuthMode('login')}
+                className={`flex-1 py-2 px-4 rounded transition-colors ${
+                  authMode === 'login' 
+                    ? 'bg-accent text-black' 
+                    : 'bg-bg-primary text-text-primary hover:bg-gray-700'
+                }`}
+              >
+                Login
+              </button>
+              <button
+                onClick={() => setAuthMode('register')}
+                className={`flex-1 py-2 px-4 rounded transition-colors ${
+                  authMode === 'register' 
+                    ? 'bg-accent text-black' 
+                    : 'bg-bg-primary text-text-primary hover:bg-gray-700'
+                }`}
+              >
+                Register
+              </button>
+            </div>
+
+            {authMode === 'login' ? (
+              <div className="space-y-4">
+                <p className="text-text-secondary text-center mb-4">
+                  Welcome back! Please sign in to continue.
+                </p>
+                <button 
+                  onClick={() => router.push('/login')}
+                  className="w-full btn-primary py-3"
+                >
+                  Go to Login Page
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-text-secondary text-center mb-4">
+                  Create an account to start training your math skills!
+                </p>
+                <button 
+                  onClick={() => router.push('/register')}
+                  className="w-full btn-primary py-3"
+                >
+                  Go to Register Page
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     )
   }
