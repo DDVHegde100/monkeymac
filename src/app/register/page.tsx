@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import PhoneVerification from '../../components/PhoneVerification'
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('')
@@ -12,6 +13,8 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false)
+  const [verifiedPhone, setVerifiedPhone] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,19 +34,34 @@ export default function RegisterPage() {
       return
     }
 
+    // Show phone verification modal
+    setShowPhoneVerification(true)
+    setLoading(false)
+  }
+
+  const handlePhoneVerified = async (phoneNumber: string) => {
+    setVerifiedPhone(phoneNumber)
+    setShowPhoneVerification(false)
+    setLoading(true)
+
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ firstName, username, phone, password }),
+        body: JSON.stringify({ 
+          firstName, 
+          username, 
+          phone: phoneNumber, 
+          password 
+        }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        router.push('/login')
+        router.push('/login?message=Registration successful! Please log in.')
       } else {
         setError(data.error || 'Registration failed')
       }
@@ -151,6 +169,14 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
+
+      {/* Phone Verification Modal */}
+      {showPhoneVerification && (
+        <PhoneVerification
+          onVerified={handlePhoneVerified}
+          onCancel={() => setShowPhoneVerification(false)}
+        />
+      )}
     </div>
   )
 }
