@@ -127,6 +127,24 @@ export default function MathTest() {
     }
   }, [isAuthenticated, loading])
 
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleGlobalKeyPress = (e: KeyboardEvent) => {
+      // Restart shortcut: Ctrl+R or Cmd+R (during testing only)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'r' && testState === 'testing') {
+        e.preventDefault()
+        restartTest()
+      }
+      // Escape to restart during testing
+      if (e.key === 'Escape' && testState === 'testing') {
+        restartTest()
+      }
+    }
+
+    document.addEventListener('keydown', handleGlobalKeyPress)
+    return () => document.removeEventListener('keydown', handleGlobalKeyPress)
+  }, [testState])
+
   // Load user preferences
   useEffect(() => {
     const loadPreferences = async () => {
@@ -305,6 +323,14 @@ export default function MathTest() {
   }
 
   const restartTest = () => {
+    // If there are problems solved, confirm restart
+    if (problems.length > 0) {
+      const confirmed = window.confirm(
+        `Are you sure you want to restart? You'll lose your current progress (${problems.length} problems solved).`
+      )
+      if (!confirmed) return
+    }
+    
     setRestartCount(prev => prev + 1)
     startTest()
   }
@@ -912,11 +938,12 @@ export default function MathTest() {
               )}
               <button
                 onClick={restartTest}
-                className="btn-secondary px-6 py-3 flex items-center gap-2"
-                title="Restart test (counts as restart in stats)"
+                className="btn-secondary px-6 py-3 flex items-center gap-2 hover:bg-red-600 hover:text-white transition-colors"
+                title="Restart test (Ctrl+R or Esc) - counts as restart in stats"
               >
                 <span>🔄</span>
                 Restart
+                <span className="text-xs opacity-75 ml-1">(Ctrl+R)</span>
               </button>
             </div>
           </div>
@@ -967,16 +994,26 @@ export default function MathTest() {
 
           <div className="flex gap-4 justify-center mb-8">
             <button
-              onClick={() => setTestState('setup')}
-              className="btn-primary px-8 py-3"
+              onClick={() => {
+                setRestartCount(prev => prev + 1)
+                startTest()
+              }}
+              className="btn-primary px-8 py-3 flex items-center gap-2"
             >
-              Test Again
+              <span>🔄</span>
+              Quick Restart
             </button>
             <button
-              onClick={() => router.push('/')}
+              onClick={() => setTestState('setup')}
               className="btn-secondary px-8 py-3"
             >
-              Home
+              Change Settings
+            </button>
+            <button
+              onClick={() => router.push('/stats')}
+              className="btn-secondary px-8 py-3"
+            >
+              View Stats
             </button>
           </div>
 
