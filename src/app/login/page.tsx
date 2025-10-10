@@ -40,9 +40,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="test-container flex items-center justify-center p-8">
+    <div className="min-h-screen bg-bg-primary flex items-center justify-center p-8">
       <div className="max-w-md w-full">
-        <h1 className="text-4xl font-bold text-center mb-8 text-accent">Login</h1>
+        {/* Logo and Title */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-xl overflow-hidden bg-accent/10 border border-accent/20">
+            <img 
+              src="/monk.png" 
+              alt="MonkeyMac Logo" 
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
+          <h1 className="text-4xl font-bold text-accent mb-2">Welcome Back</h1>
+          <p className="text-text-secondary">Ready to boost your math skills?</p>
+        </div>
+
+        <div className="bg-bg-secondary rounded-xl p-8 border border-gray-600 shadow-xl">
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -92,6 +105,7 @@ export default function LoginPage() {
             Register here
           </Link>
         </p>
+        </div>
       </div>
     </div>
   )

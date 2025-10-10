@@ -469,25 +469,39 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="test-container">
-      {/* Navigation */}
-      <div className="flex justify-between items-center p-6 bg-bg-secondary">
-        <div className="flex items-center space-x-8">
+    <div className="min-h-screen bg-bg-primary">
+      {/* Header */}
+      <div className="bg-bg-secondary border-b border-gray-700 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <div className="w-8 h-8 rounded-lg overflow-hidden bg-accent/10 border border-accent/20">
+              <img 
+                src="/monk.png" 
+                alt="MonkeyMac Logo" 
+                className="w-full h-full object-cover object-center"
+              />
+            </div>
+            <h1 className="text-2xl font-bold text-accent">Settings</h1>
+          </div>
           <button 
-            onClick={() => router.push('/')}
-            className="text-2xl font-bold text-accent hover:text-yellow-400"
+            onClick={() => router.push('/test')}
+            className="text-text-secondary hover:text-accent transition-colors"
           >
-            MonkeyMac
+            ← Back to Test
           </button>
-          <nav className="flex space-x-6">
-            <button 
-              onClick={() => router.push('/test')}
-              className="text-text-primary hover:text-accent transition-colors"
-            >
-              Test
-            </button>
-            <span className="text-accent font-medium">Settings</span>
-          </nav>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-6xl mx-auto p-6">
+        {/* User Welcome */}
+        <div className="mb-8">
+          <h2 className="text-xl text-text-primary mb-2">
+            Welcome, {user?.firstName}! 👋
+          </h2>
+          <p className="text-text-secondary">
+            Customize your MonkeyMac experience with themes, fonts, and performance settings.
+          </p>
         </div>
         <button 
           onClick={() => {
