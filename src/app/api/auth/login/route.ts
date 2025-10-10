@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MongoClient } from 'mongodb'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { connectToDatabase } from '../../../../lib/mongodb'
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/monkeymax'
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this'
 
 export async function POST(request: NextRequest) {
@@ -17,17 +16,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const client = new MongoClient(MONGODB_URI)
-    await client.connect()
-    
-    const db = client.db('monkeymax')
+    const { db } = await connectToDatabase()
     const users = db.collection('users')
 
     // Find user by username
     const user = await users.findOne({ username })
     
     if (!user) {
-      await client.close()
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -38,14 +33,11 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await bcrypt.compare(password, user.password)
     
     if (!isValidPassword) {
-      await client.close()
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       )
     }
-
-    await client.close()
 
     // Create JWT token
     const token = jwt.sign(

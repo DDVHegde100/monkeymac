@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MongoClient } from 'mongodb'
 import bcrypt from 'bcryptjs'
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/monkeymax'
+import { connectToDatabase } from '../../../../lib/mongodb'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,10 +13,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const client = new MongoClient(MONGODB_URI)
-    await client.connect()
-    
-    const db = client.db('monkeymax')
+    const { db } = await connectToDatabase()
     const users = db.collection('users')
 
     // Check if user already exists
@@ -27,7 +22,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
-      await client.close()
       return NextResponse.json(
         { error: 'User with this phone or username already exists' },
         { status: 409 }
@@ -55,7 +49,6 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await users.insertOne(newUser)
-    await client.close()
 
     return NextResponse.json(
       { 
