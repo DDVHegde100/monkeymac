@@ -13,7 +13,6 @@ export default function PhoneVerification({ onVerified, onCancel }: PhoneVerific
   const [verificationCode, setVerificationCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [demoCode, setDemoCode] = useState('')
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-digits
@@ -53,7 +52,6 @@ export default function PhoneVerification({ onVerified, onCancel }: PhoneVerific
       const data = await response.json()
 
       if (response.ok) {
-        setDemoCode(data.demo_code) // Only for demo purposes
         setStep('code')
       } else {
         setError(data.error || 'Failed to send verification code')
@@ -112,7 +110,7 @@ export default function PhoneVerification({ onVerified, onCancel }: PhoneVerific
       const data = await response.json()
 
       if (response.ok) {
-        setDemoCode(data.demo_code)
+
         setError('New verification code sent!')
       } else {
         setError(data.error || 'Failed to resend code')
@@ -204,17 +202,6 @@ export default function PhoneVerification({ onVerified, onCancel }: PhoneVerific
               <div className="mt-2 text-xs text-text-secondary text-center">
                 Code sent to {phoneNumber}
               </div>
-              
-              {/* Demo Code Display (Remove in production) */}
-              {demoCode && (
-                <div className="mt-2 p-2 bg-yellow-500/20 border border-yellow-500/30 rounded text-center">
-                  <div className="text-xs text-yellow-300 mb-1">Demo Code:</div>
-                  <div className="font-mono text-lg font-bold text-yellow-400">{demoCode}</div>
-                  <div className="text-xs text-yellow-300 mt-1">
-                    (In production, this would be sent via SMS)
-                  </div>
-                </div>
-              )}
             </div>
 
             {error && (

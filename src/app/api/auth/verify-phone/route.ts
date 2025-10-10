@@ -1,7 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { connectToDatabase } from '../../../../lib/mongodb'
 
-// Simple in-memory storage for demo (use Redis in production)
-const verificationCodes = new Map<string, { code: string, expires: number }>()
+// Function to send SMS using Textbelt (free service)
+async function sendSMS(phoneNumber: string, message: string) {
+  try {
+    const response = await fetch('https://textbelt.com/text', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone: `+1${phoneNumber}`,
+        message: message,
+        key: 'textbelt', // Free tier key (limited messages per day)
+      }),
+    })
+
+    const result = await response.json()
+    
+    if (result.success) {
+      console.log(`SMS sent successfully to ${phoneNumber}`)
+      return true
+    } else {
+      console.error('SMS send failed:', result.error)
+      return false
+    }
+  } catch (error) {
+    console.error('SMS service error:', error)
+    return false
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,23 +44,36 @@ export async function POST(request: NextRequest) {
 
     // Generate a 3-digit verification code
     const code = Math.floor(100 + Math.random() * 900).toString()
-    const expires = Date.now() + 5 * 60 * 1000 // 5 minutes
+    const expires = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
 
-    // Store the code (in production, use a proper database/cache)
-    verificationCodes.set(phoneNumber, { code, expires })
+    // Store the code in MongoDB
+    const { db } = await connectToDatabase()
+    await db.collection('verification_codes').updateOne(
+      { phoneNumber },
+      { 
+        $set: { 
+          code, 
+          expires, 
+          createdAt: new Date() 
+        } 
+      },
+      { upsert: true }
+    )
 
-    // In production, you would send SMS here using Twilio, AWS SNS, etc.
-    console.log(`Verification code for ${phoneNumber}: ${code}`)
+    // Send actual SMS
+    const smsMessage = `Your MonkeyMac verification code is: ${code}. This code expires in 5 minutes.`
+    const smsSent = await sendSMS(phoneNumber, smsMessage)
 
-    // For demo purposes, we'll simulate sending SMS
-    // await sendSMS(phoneNumber, `Your MonkeyMac verification code is: ${code}`)
+    if (!smsSent) {
+      return NextResponse.json(
+        { error: 'Failed to send SMS. Please try again.' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json(
       { 
-        message: 'Verification code sent',
-        // In production, NEVER send the code in the response
-        // This is only for demo purposes
-        demo_code: code 
+        message: 'Verification code sent to your phone',
       },
       { status: 200 }
     )
@@ -56,7 +97,9 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const stored = verificationCodes.get(phoneNumber)
+    // Get stored verification code from MongoDB
+    const { db } = await connectToDatabase()
+    const stored = await db.collection('verification_codes').findOne({ phoneNumber })
     
     if (!stored) {
       return NextResponse.json(
@@ -65,8 +108,8 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    if (Date.now() > stored.expires) {
-      verificationCodes.delete(phoneNumber)
+    if (new Date() > stored.expires) {
+      await db.collection('verification_codes').deleteOne({ phoneNumber })
       return NextResponse.json(
         { error: 'Verification code has expired' },
         { status: 400 }
@@ -81,7 +124,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Code is valid, clean up
-    verificationCodes.delete(phoneNumber)
+    await db.collection('verification_codes').deleteOne({ phoneNumber })
 
     return NextResponse.json(
       { message: 'Phone number verified successfully' },
