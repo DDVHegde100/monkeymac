@@ -80,6 +80,7 @@ export default function MathTest() {
   const [userPreferences, setUserPreferences] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [restartCount, setRestartCount] = useState(0)
+  const [tabPressed, setTabPressed] = useState(false)
   
   const inputRef = useRef<HTMLInputElement>(null)
   const testStartTimeRef = useRef(0)
@@ -130,6 +131,23 @@ export default function MathTest() {
   // Global keyboard shortcuts
   useEffect(() => {
     const handleGlobalKeyPress = (e: KeyboardEvent) => {
+      // Tab+Enter for quick restart (like MonkeyType)
+      if (e.key === 'Tab' && testState === 'testing') {
+        e.preventDefault()
+        setTabPressed(true)
+        return
+      }
+      if (e.key === 'Enter' && tabPressed && testState === 'testing') {
+        e.preventDefault()
+        restartTest()
+        setTabPressed(false)
+        return
+      }
+      // Reset tab state on other keys
+      if (e.key !== 'Tab') {
+        setTabPressed(false)
+      }
+      
       // Restart shortcut: Ctrl+R or Cmd+R (during testing only)
       if ((e.ctrlKey || e.metaKey) && e.key === 'r' && testState === 'testing') {
         e.preventDefault()
@@ -946,12 +964,13 @@ export default function MathTest() {
               )}
               <button
                 onClick={restartTest}
-                className="btn-secondary px-6 py-3 flex items-center gap-2 hover:bg-red-600 hover:text-white transition-colors"
-                title="Restart test (Ctrl+R or Esc) - counts as restart in stats"
+                className={`btn-secondary px-6 py-3 flex items-center gap-2 hover:bg-red-600 hover:text-white transition-colors ${tabPressed ? 'bg-yellow-600 text-white' : ''}`}
+                title="Restart test (Tab+Enter, Ctrl+R, or Esc) - counts as restart in stats"
               >
-                <span>🔄</span>
                 Restart
-                <span className="text-xs opacity-75 ml-1">(Ctrl+R)</span>
+                <span className="text-xs opacity-75 ml-1">
+                  {tabPressed ? 'Press Enter!' : 'Tab+Enter'}
+                </span>
               </button>
             </div>
           </div>
@@ -1000,16 +1019,21 @@ export default function MathTest() {
             </div>
           </div>
 
-          <div className="flex gap-4 justify-center mb-8">
+          <div className="flex gap-4 justify-center mb-8 flex-wrap">
             <button
               onClick={() => {
                 setRestartCount(prev => prev + 1)
                 startTest()
               }}
-              className="btn-primary px-8 py-3 flex items-center gap-2"
+              className="btn-primary px-8 py-3"
             >
-              <span>🔄</span>
               Quick Restart
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="btn-secondary px-8 py-3"
+            >
+              Home
             </button>
             <button
               onClick={() => setTestState('setup')}
