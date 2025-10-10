@@ -636,6 +636,12 @@ export default function MathTest() {
             <nav className="flex space-x-6">
               <span className="text-accent font-medium">Test</span>
               <button 
+                onClick={() => router.push('/stats')}
+                className="text-text-primary hover:text-accent transition-colors"
+              >
+                Stats
+              </button>
+              <button 
                 onClick={() => router.push('/settings')}
                 className="text-text-primary hover:text-accent transition-colors"
               >
