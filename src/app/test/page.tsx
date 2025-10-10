@@ -143,7 +143,7 @@ export default function MathTest() {
 
     document.addEventListener('keydown', handleGlobalKeyPress)
     return () => document.removeEventListener('keydown', handleGlobalKeyPress)
-  }, [testState])
+  }, [testState]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load user preferences
   useEffect(() => {
