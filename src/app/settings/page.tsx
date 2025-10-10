@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import '../../../styles/enhanced-settings.css'
 
 interface Theme {
   id: string
@@ -179,17 +180,24 @@ const FONTS: Font[] = [
   { id: 'ubuntu-mono', name: 'Ubuntu Mono', family: 'Ubuntu Mono, monospace', category: 'monospace' },
   { id: 'cascadia-code', name: 'Cascadia Code', family: 'Cascadia Code, Consolas, monospace', category: 'monospace' },
   { id: 'inconsolata', name: 'Inconsolata', family: 'Inconsolata, monospace', category: 'monospace' },
+  { id: 'sf-mono', name: 'SF Mono', family: 'SF Mono, Monaco, Inconsolata, monospace', category: 'monospace' },
+  { id: 'menlo', name: 'Menlo', family: 'Menlo, Consolas, Monaco, monospace', category: 'monospace' },
   
-  // Sans-serif fonts
+  // Modern Sans-serif fonts (including Apple & Google)
+  { id: 'sf-pro', name: 'SF Pro Display', family: '-apple-system, BlinkMacSystemFont, SF Pro Display, system-ui, sans-serif', category: 'sans-serif' },
+  { id: 'product-sans', name: 'Product Sans', family: 'Product Sans, Google Sans, system-ui, sans-serif', category: 'sans-serif' },
+  { id: 'google-sans', name: 'Google Sans', family: 'Google Sans, Product Sans, system-ui, sans-serif', category: 'sans-serif' },
   { id: 'inter', name: 'Inter', family: 'Inter, system-ui, sans-serif', category: 'sans-serif' },
   { id: 'roboto', name: 'Roboto', family: 'Roboto, system-ui, sans-serif', category: 'sans-serif' },
-  { id: 'helvetica', name: 'Helvetica', family: 'Helvetica, Arial, sans-serif', category: 'sans-serif' },
+  { id: 'helvetica', name: 'Helvetica Neue', family: 'Helvetica Neue, Helvetica, Arial, sans-serif', category: 'sans-serif' },
   { id: 'arial', name: 'Arial', family: 'Arial, Helvetica, sans-serif', category: 'sans-serif' },
   { id: 'open-sans', name: 'Open Sans', family: 'Open Sans, sans-serif', category: 'sans-serif' },
   { id: 'lato', name: 'Lato', family: 'Lato, sans-serif', category: 'sans-serif' },
   { id: 'montserrat', name: 'Montserrat', family: 'Montserrat, sans-serif', category: 'sans-serif' },
   { id: 'nunito', name: 'Nunito', family: 'Nunito, sans-serif', category: 'sans-serif' },
   { id: 'poppins', name: 'Poppins', family: 'Poppins, sans-serif', category: 'sans-serif' },
+  { id: 'work-sans', name: 'Work Sans', family: 'Work Sans, sans-serif', category: 'sans-serif' },
+  { id: 'dm-sans', name: 'DM Sans', family: 'DM Sans, sans-serif', category: 'sans-serif' },
   { id: 'system-ui', name: 'System UI', family: 'system-ui, -apple-system, sans-serif', category: 'sans-serif' },
   
   // Serif fonts
@@ -198,6 +206,13 @@ const FONTS: Font[] = [
   { id: 'merriweather', name: 'Merriweather', family: 'Merriweather, serif', category: 'serif' },
   { id: 'playfair', name: 'Playfair Display', family: 'Playfair Display, serif', category: 'serif' },
   { id: 'crimson-text', name: 'Crimson Text', family: 'Crimson Text, serif', category: 'serif' },
+  
+  // Display & Creative fonts with glow effects
+  { id: 'orbitron', name: 'Orbitron (Glow)', family: 'Orbitron, monospace', category: 'display' },
+  { id: 'exo-2', name: 'Exo 2 (Glow)', family: 'Exo 2, sans-serif', category: 'display' },
+  { id: 'raleway', name: 'Raleway (Glow)', family: 'Raleway, sans-serif', category: 'display' },
+  { id: 'quicksand', name: 'Quicksand (Glow)', family: 'Quicksand, sans-serif', category: 'display' },
+  { id: 'nova-mono', name: 'Nova Mono (Glow)', family: 'Nova Mono, monospace', category: 'display' },
   { id: 'libre-baskerville', name: 'Libre Baskerville', family: 'Libre Baskerville, serif', category: 'serif' },
   
   // Display fonts
@@ -214,12 +229,19 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [testFontSize, setTestFontSize] = useState(3) // rem units
+  const [operationStats, setOperationStats] = useState<any>(null)
+  const [statsLoading, setStatsLoading] = useState(true)
 
   useEffect(() => {
     checkAuthStatus()
     loadSavedTheme()
     loadSavedFont()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    loadSavedFontSize()
+    if (isAuthenticated) {
+      loadOperationStats()
+    }
+  }, [isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkAuthStatus = async () => {
     try {
@@ -337,6 +359,41 @@ export default function SettingsPage() {
     }
   }
 
+  const loadSavedFontSize = () => {
+    const savedSize = localStorage.getItem('monkeymax-font-size')
+    if (savedSize) {
+      const size = parseFloat(savedSize)
+      setTestFontSize(size)
+      applyFontSize(size)
+    }
+  }
+
+  const applyFontSize = (size: number) => {
+    const root = document.documentElement
+    root.style.setProperty('--test-font-size', `${size}rem`)
+  }
+
+  const handleFontSizeChange = (size: number) => {
+    setTestFontSize(size)
+    applyFontSize(size)
+    localStorage.setItem('monkeymax-font-size', size.toString())
+  }
+
+  const loadOperationStats = async () => {
+    try {
+      setStatsLoading(true)
+      const response = await fetch('/api/user/operation-stats')
+      if (response.ok) {
+        const data = await response.json()
+        setOperationStats(data)
+      }
+    } catch (error) {
+      console.error('Failed to load operation stats:', error)
+    } finally {
+      setStatsLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="test-container flex items-center justify-center min-h-screen">
@@ -408,72 +465,33 @@ export default function SettingsPage() {
             Choose from MonkeyType-inspired themes to customize your experience
           </p>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+          <div className="theme-grid">
             {THEMES.map((theme) => (
               <div
                 key={theme.id}
-                className={`theme-card cursor-pointer p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
-                  currentTheme === theme.id ? 'scale-105 ring-2 ring-offset-2' : ''
-                }`}
-                style={{
-                  backgroundColor: theme.colors.primary,
-                  borderColor: currentTheme === theme.id ? theme.colors.accent : theme.colors.secondary,
-                  color: theme.colors.textPrimary,
-                  borderWidth: currentTheme === theme.id ? '3px' : '2px'
-                }}
+                className={`theme-card ${currentTheme === theme.id ? 'selected' : ''}`}
                 onClick={() => handleThemeChange(theme.id)}
               >
-                <div className="text-center">
-                  <h3 
-                    className="text-xs font-semibold mb-3 truncate"
-                    style={{ color: theme.colors.textPrimary }}
-                  >
+                <div className="theme-preview" style={{ backgroundColor: theme.colors.primary, color: theme.colors.textPrimary }}>
+                  <div className="theme-name" style={{ color: theme.colors.textPrimary }}>
                     {theme.name}
-                  </h3>
+                  </div>
                   
+                  <div className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    123 + 456 = ?
+                  </div>
 
-
-                  {/* Color palette dots */}
-                  <div className="flex gap-1 justify-center mb-2">
-                    <div 
-                      className="w-2 h-2 rounded-full border border-gray-500" 
-                      style={{ backgroundColor: theme.colors.primary }}
-                      title="Primary"
-                    />
-                    <div 
-                      className="w-2 h-2 rounded-full border border-gray-500" 
-                      style={{ backgroundColor: theme.colors.secondary }}
-                      title="Secondary"
-                    />
-                    <div 
-                      className="w-2 h-2 rounded-full border border-gray-500" 
-                      style={{ backgroundColor: theme.colors.accent }}
-                      title="Accent"
-                    />
-                    <div 
-                      className="w-2 h-2 rounded-full border border-gray-500" 
-                      style={{ backgroundColor: theme.colors.correct }}
-                      title="Correct"
-                    />
-                    <div 
-                      className="w-2 h-2 rounded-full border border-gray-500" 
-                      style={{ backgroundColor: theme.colors.incorrect }}
-                      title="Incorrect"
-                    />
+                  <div className="theme-colors">
+                    <div className="color-dot" style={{ backgroundColor: theme.colors.primary }} title="Primary" />
+                    <div className="color-dot" style={{ backgroundColor: theme.colors.secondary }} title="Secondary" />
+                    <div className="color-dot" style={{ backgroundColor: theme.colors.accent }} title="Accent" />
+                    <div className="color-dot" style={{ backgroundColor: theme.colors.correct }} title="Correct" />
+                    <div className="color-dot" style={{ backgroundColor: theme.colors.incorrect }} title="Incorrect" />
                   </div>
 
                   {currentTheme === theme.id && (
-                    <div className="mt-2">
-                      <div 
-                        className="text-xs font-bold px-2 py-1 rounded-full border"
-                        style={{ 
-                          backgroundColor: theme.colors.accent,
-                          color: theme.colors.primary,
-                          borderColor: theme.colors.accent
-                        }}
-                      >
-                        ACTIVE
-                      </div>
+                    <div className="text-xs font-bold text-center mt-2" style={{ color: theme.colors.accent }}>
+                      ✓ ACTIVE
                     </div>
                   )}
                 </div>
@@ -489,51 +507,153 @@ export default function SettingsPage() {
             Choose a font family for the typing test and interface
           </p>
           
-          <div className="flex flex-wrap gap-3">
+          <div className="font-grid">
             {FONTS.map((font) => (
-              <button
+              <div
                 key={font.id}
-                className={`px-4 py-2 rounded-lg border-2 transition-all duration-200 bg-bg-secondary hover:bg-gray-700 ${
-                  currentFont === font.id 
-                    ? 'border-accent' 
-                    : 'border-gray-600 hover:border-gray-400'
+                className={`font-card ${currentFont === font.id ? 'selected' : ''} ${
+                  font.category === 'display' ? 'glow-font' : ''
                 }`}
                 onClick={() => handleFontChange(font.id)}
-                style={{ fontFamily: font.family }}
               >
-                <span className="text-text-primary text-sm">
-                  {font.name}
-                </span>
+                <div className="font-preview" style={{ fontFamily: font.family }}>
+                  {font.category === 'display' ? (
+                    <div className="glow-text">42 + 18 = 60</div>
+                  ) : (
+                    '42 + 18 = 60'
+                  )}
+                </div>
+                <div className="font-name">{font.name}</div>
+                <div className="font-category">{font.category}</div>
                 {currentFont === font.id && (
-                  <span className="ml-2 text-accent text-xs">✓</span>
+                  <div className="text-accent text-xs font-bold mt-2">✓ ACTIVE</div>
                 )}
-              </button>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Test Settings Preview */}
+        {/* Font Size Control */}
+        <div className="stats-card mb-8">
+          <h2 className="text-3xl font-semibold mb-6">Test Font Size</h2>
+          <p className="text-text-secondary mb-6">
+            Adjust the font size for math problems during tests
+          </p>
+          
+          <div className="font-size-controls">
+            <span className="text-text-secondary min-w-[60px]">Small</span>
+            <input
+              type="range"
+              min="1.5"
+              max="6"
+              step="0.25"
+              value={testFontSize}
+              onChange={(e) => handleFontSizeChange(parseFloat(e.target.value))}
+              className="font-size-slider"
+            />
+            <span className="text-text-secondary min-w-[60px] text-right">Large</span>
+            <span className="text-accent font-bold min-w-[80px] text-center">
+              {testFontSize}rem
+            </span>
+          </div>
+          
+          {/* Live Preview */}
+          <div className="test-preview">
+            <div className="test-preview-problem" style={{ fontSize: `${testFontSize}rem` }}>
+              42 + 18 = ?
+            </div>
+            <input 
+              type="text" 
+              className="test-preview-input"
+              style={{ fontSize: `${testFontSize * 0.8}rem` }}
+              placeholder="60"
+              readOnly
+            />
+          </div>
+        </div>
+
+        {/* Operation Statistics */}
+        {operationStats && (
+          <div className="stats-card-enhanced mb-8">
+            <h2 className="text-3xl font-semibold mb-6">📊 Your Performance by Operation</h2>
+            
+            {statsLoading ? (
+              <div className="text-center text-text-secondary">Loading statistics...</div>
+            ) : (
+              <>
+                {/* Overall Stats */}
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <div className="stat-value">{operationStats.overallStats?.totalTests || 0}</div>
+                    <div className="stat-label">Total Tests</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">{operationStats.overallStats?.totalProblems || 0}</div>
+                    <div className="stat-label">Total Problems</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">{operationStats.overallStats?.avgAccuracy?.toFixed(1) || 0}%</div>
+                    <div className="stat-label">Overall Accuracy</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">{operationStats.overallStats?.avgTimePerProblem?.toFixed(1) || 0}s</div>
+                    <div className="stat-label">Avg Time/Problem</div>
+                  </div>
+                </div>
+
+                {/* Operation Breakdown */}
+                <div className="operation-breakdown">
+                  {Object.entries(operationStats.operationStats || {}).map(([operation, stats]: [string, any]) => (
+                    <div key={operation} className="operation-card">
+                      <div className="operation-title">{operation}</div>
+                      <div className="operation-stats">
+                        <div className="operation-stat">
+                          <span>Accuracy:</span>
+                          <span className="text-correct font-bold">{stats.avgAccuracy?.toFixed(1) || 0}%</span>
+                        </div>
+                        <div className="operation-stat">
+                          <span>Avg Time:</span>
+                          <span className="text-accent font-bold">{stats.avgTimePerProblem?.toFixed(2) || 0}s</span>
+                        </div>
+                        <div className="operation-stat">
+                          <span>Problems:</span>
+                          <span className="text-text-primary">{stats.totalProblems || 0}</span>
+                        </div>
+                        <div className="operation-stat">
+                          <span>Tests:</span>
+                          <span className="text-text-primary">{stats.testCount || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Theme Preview */}
         <div className="stats-card">
-          <h2 className="text-3xl font-semibold mb-6">Test Settings</h2>
+          <h2 className="text-3xl font-semibold mb-6">Live Preview</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-xl font-semibold mb-4">Default Test Configuration</h3>
+              <h3 className="text-xl font-semibold mb-4">Current Settings</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Duration:</span>
-                  <span className="text-text-primary">2 minutes</span>
+                  <span className="text-text-secondary">Theme:</span>
+                  <span className="text-text-primary capitalize">
+                    {THEMES.find(t => t.id === currentTheme)?.name || currentTheme}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Operations:</span>
-                  <span className="text-text-primary">All (+, −, ×, ÷)</span>
+                  <span className="text-text-secondary">Font:</span>
+                  <span className="text-text-primary">
+                    {FONTS.find(f => f.id === currentFont)?.name || currentFont}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Auto-advance:</span>
-                  <span className="text-text-primary">Enabled</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-text-secondary">Number ranges:</span>
-                  <span className="text-text-primary">Zetamac standard</span>
+                  <span className="text-text-secondary">Test Font Size:</span>
+                  <span className="text-text-primary">{testFontSize}rem</span>
                 </div>
               </div>
             </div>

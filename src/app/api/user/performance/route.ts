@@ -239,14 +239,14 @@ async function getPerformanceStats(db: any, userId: ObjectId) {
     return { message: 'No performance data available' }
   }
 
-  const loadTimes = performance.map((p: any) => p.loadTime || 0).filter(t => t > 0)
-  const renderTimes = performance.map((p: any) => p.renderTime || 0).filter(t => t > 0)
-  const memoryUsage = performance.map((p: any) => p.memoryUsage || 0).filter(m => m > 0)
+  const loadTimes = performance.map((p: any) => p.loadTime || 0).filter((t: number) => t > 0)
+  const renderTimes = performance.map((p: any) => p.renderTime || 0).filter((t: number) => t > 0)
+  const memoryUsage = performance.map((p: any) => p.memoryUsage || 0).filter((m: number) => m > 0)
   
   return {
-    averageLoadTime: loadTimes.length > 0 ? loadTimes.reduce((a, b) => a + b, 0) / loadTimes.length : 0,
-    averageRenderTime: renderTimes.length > 0 ? renderTimes.reduce((a, b) => a + b, 0) / renderTimes.length : 0,
-    averageMemoryUsage: memoryUsage.length > 0 ? memoryUsage.reduce((a, b) => a + b, 0) / memoryUsage.length : 0,
+    averageLoadTime: loadTimes.length > 0 ? loadTimes.reduce((a: number, b: number) => a + b, 0) / loadTimes.length : 0,
+    averageRenderTime: renderTimes.length > 0 ? renderTimes.reduce((a: number, b: number) => a + b, 0) / renderTimes.length : 0,
+    averageMemoryUsage: memoryUsage.length > 0 ? memoryUsage.reduce((a: number, b: number) => a + b, 0) / memoryUsage.length : 0,
     deviceTypes: getDeviceTypeDistribution(performance),
     networkTypes: getNetworkTypeDistribution(performance),
     performanceGrade: calculatePerformanceGrade(loadTimes, renderTimes)
