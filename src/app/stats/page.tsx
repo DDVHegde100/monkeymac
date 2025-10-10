@@ -77,6 +77,87 @@ export default function StatsPage() {
     return `${minutes}m`
   }
 
+  const PPMBarChart = ({ recentTests }: { recentTests: any[] }) => {
+    // Define PPM ranges
+    const ranges = [
+      { min: 0, max: 10, label: '0-10' },
+      { min: 10, max: 20, label: '10-20' },
+      { min: 20, max: 30, label: '20-30' },
+      { min: 30, max: 40, label: '30-40' },
+      { min: 40, max: 50, label: '40-50' },
+      { min: 50, max: 60, label: '50-60' },
+      { min: 60, max: 70, label: '60-70' },
+      { min: 70, max: 80, label: '70-80' },
+      { min: 80, max: 90, label: '80-90' },
+      { min: 90, max: 100, label: '90-100' },
+      { min: 100, max: Infinity, label: '100+' }
+    ]
+
+    // Calculate PPM for each test and categorize
+    const distribution = ranges.map(range => ({
+      ...range,
+      count: 0,
+      percentage: 0
+    }))
+
+    recentTests.forEach(test => {
+      const ppm = test.duration > 0 ? Math.round((test.problems / (test.duration / 60))) : 0
+      const rangeIndex = ranges.findIndex(r => ppm >= r.min && ppm < r.max)
+      if (rangeIndex !== -1) {
+        distribution[rangeIndex].count++
+      }
+    })
+
+    // Calculate percentages
+    const totalTests = recentTests.length
+    distribution.forEach(range => {
+      range.percentage = totalTests > 0 ? (range.count / totalTests) * 100 : 0
+    })
+
+    const maxCount = Math.max(...distribution.map(d => d.count), 1)
+
+    return (
+      <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700">
+        <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center">
+          <span className="mr-3">📊</span>
+          PPM Distribution
+        </h2>
+        <div className="space-y-3">
+          {distribution.map((range, index) => (
+            <div key={range.label} className="flex items-center">
+              <div className="w-12 text-sm text-text-secondary font-mono">
+                {range.label}
+              </div>
+              <div className="flex-1 mx-4">
+                <div className="relative h-6 bg-bg-primary rounded-full overflow-hidden">
+                  <div
+                    className={`absolute left-0 top-0 h-full rounded-full transition-all duration-500 ${
+                      range.count > 0 ? 'bg-gradient-to-r from-accent to-yellow-400' : 'bg-gray-600'
+                    }`}
+                    style={
+                      {
+                        width: `${Math.max((range.count / maxCount) * 100, range.count > 0 ? 8 : 0)}%`
+                      } as React.CSSProperties
+                    }
+                  />
+                </div>
+              </div>
+              <div className="w-16 text-right">
+                <span className="text-sm text-text-primary font-medium">{range.count}</span>
+                <span className="text-xs text-text-secondary ml-1">
+                  ({range.percentage.toFixed(0)}%)
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 text-center text-xs text-text-secondary opacity-75">
+          Based on your last {totalTests} test{totalTests !== 1 ? 's' : ''}
+        </div>
+      </div>
+    )
+  }
+
   const StatCard = ({ title, value, subtitle, icon }: { title: string, value: string | number, subtitle?: string, icon: string }) => (
     <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700 hover:border-accent/30 transition-colors">
       <div className="flex items-center justify-between mb-2">
@@ -254,6 +335,11 @@ export default function StatsPage() {
                   />
                 </div>
               </div>
+
+              {/* PPM Distribution Chart */}
+              {stats.recentTests && stats.recentTests.length > 0 && (
+                <PPMBarChart recentTests={stats.recentTests} />
+              )}
 
               {/* Recent Tests */}
               {stats.recentTests && stats.recentTests.length > 0 && (
