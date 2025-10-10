@@ -87,6 +87,29 @@ export default function MathTest() {
     checkAuthStatus()
   }, [])
 
+  // Re-check auth status when user returns to the page/tab
+  useEffect(() => {
+    const handleFocus = () => {
+      if (!isAuthenticated) {
+        checkAuthStatus()
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !isAuthenticated) {
+        checkAuthStatus()
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isAuthenticated])
+
   // Load user preferences
   useEffect(() => {
     const loadPreferences = async () => {
