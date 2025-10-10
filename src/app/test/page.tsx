@@ -496,8 +496,27 @@ export default function MathTest() {
 
   if (loading) {
     return (
-      <div className="test-container flex items-center justify-center min-h-screen">
-        <div className="text-text-secondary">Loading...</div>
+      <div className="test-container flex items-center justify-center min-h-screen bg-bg-primary">
+        <div className="flex flex-col items-center space-y-6">
+          {/* Animated MonkeyMac Logo */}
+          <div className="text-6xl animate-bounce">🐒</div>
+          
+          {/* Loading Text */}
+          <div className="text-2xl font-bold text-accent">MonkeyMac</div>
+          
+          {/* Loading Animation */}
+          <div className="flex space-x-2">
+            <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-accent rounded-full animate-pulse [animation-delay:0.2s]"></div>
+            <div className="w-2 h-2 bg-accent rounded-full animate-pulse [animation-delay:0.4s]"></div>
+          </div>
+          
+          {/* Loading Message */}
+          <div className="text-text-secondary text-center">
+            <p>Preparing your math training session...</p>
+            <p className="text-sm opacity-75 mt-1">Get ready to boost your mental math skills!</p>
+          </div>
+        </div>
       </div>
     )
   }
