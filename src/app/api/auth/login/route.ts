@@ -85,8 +85,15 @@ export async function POST(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Login error:', error)
+    console.error('MongoDB URI available:', !!process.env.MONGODB_URI)
+    console.error('JWT Secret available:', !!process.env.JWT_SECRET)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      },
       { status: 500 }
     )
   }
