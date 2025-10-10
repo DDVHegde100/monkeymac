@@ -2,7 +2,7 @@
 
 ![MonkeyMac Banner](public/monk.png)
 
-**Live Demo**: [monkeymac.vercel.app](https://monkeymac.vercel.app)
+**Live Demo**: [monkeymac-el1msfha3-dhruv-hegdes-projects-077eb4a3.vercel.app](https://monkeymac-el1msfha3-dhruv-hegdes-projects-077eb4a3.vercel.app)
 
 A comprehensive mental math training application that combines the aesthetic excellence of MonkeyType with the mathematical rigor of Zetamac. This is an application idea I have been wanting to make for a while since I love practicing with MonkeyType and I have recently started to do Zetamac as well. It's unfortunate for how good Zetamac is that it doesn't have any sort of tracking functionality or anything, so I decided to change that in order to be able to track my progress and see how much I can improve over time for different difficulties of problems.
 
