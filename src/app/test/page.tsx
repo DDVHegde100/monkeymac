@@ -2,16 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-
-// Theme and font constants (simplified from settings page)
-const THEMES = [
-  { id: 'dark', name: 'Dark (Default)', colors: { primary: '#1a1a1a', secondary: '#2a2a2a', accent: '#ffd700', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#ffffff', textSecondary: '#b8b8b8' }},
-  { id: 'light', name: 'Light', colors: { primary: '#ffffff', secondary: '#f5f5f5', accent: '#0066cc', correct: '#00aa00', incorrect: '#cc0000', textPrimary: '#000000', textSecondary: '#666666' }},
-  { id: 'serika', name: 'Serika', colors: { primary: '#323437', secondary: '#2c2e31', accent: '#e2b714', correct: '#00ff00', incorrect: '#ff0000', textPrimary: '#d1d0c5', textSecondary: '#646669' }},
-  { id: 'monokai', name: 'Monokai', colors: { primary: '#272822', secondary: '#383830', accent: '#a6e22e', correct: '#a6e22e', incorrect: '#f92672', textPrimary: '#f8f8f2', textSecondary: '#75715e' }},
-  { id: 'dracula', name: 'Dracula', colors: { primary: '#282a36', secondary: '#44475a', accent: '#ff79c6', correct: '#50fa7b', incorrect: '#ff5555', textPrimary: '#f8f8f2', textSecondary: '#6272a4' }},
-  { id: 'nord', name: 'Nord', colors: { primary: '#2e3440', secondary: '#3b4252', accent: '#88c0d0', correct: '#a3be8c', incorrect: '#bf616a', textPrimary: '#eceff4', textSecondary: '#d8dee9' }},
-]
+import { THEMES, applyTheme, loadTheme } from '../../utils/theme'
 
 const FONTS = [
   { id: 'jetbrains', name: 'JetBrains Mono', family: 'JetBrains Mono, monospace' },
@@ -172,17 +163,15 @@ export default function MathTest() {
           if (response.ok) {
             const data = await response.json()
             setUserPreferences(data.preferences)
-            applyTheme(data.preferences?.theme || 'monokai')
+            // Theme is handled globally now, just handle fonts here
             applyFont(data.preferences?.font || 'JetBrains Mono')
           }
         } catch (error) {
           console.error('Failed to load preferences:', error)
         }
       } else {
-        // Load from localStorage for guests
-        const savedTheme = localStorage.getItem('selectedTheme') || 'monokai'
+        // Load font from localStorage for guests (theme handled globally)
         const savedFont = localStorage.getItem('selectedFont') || 'JetBrains Mono'
-        applyTheme(savedTheme)
         applyFont(savedFont)
       }
     }
@@ -250,19 +239,7 @@ export default function MathTest() {
     }))
   }
 
-  const applyTheme = (themeId: string) => {
-    const theme = THEMES.find(t => t.id === themeId)
-    if (!theme) return
 
-    const root = document.documentElement
-    root.style.setProperty('--bg-primary', theme.colors.primary)
-    root.style.setProperty('--bg-secondary', theme.colors.secondary)
-    root.style.setProperty('--text-primary', theme.colors.textPrimary)
-    root.style.setProperty('--text-secondary', theme.colors.textSecondary)
-    root.style.setProperty('--accent', theme.colors.accent)
-    root.style.setProperty('--correct', theme.colors.correct)
-    root.style.setProperty('--incorrect', theme.colors.incorrect)
-  }
 
   const applyFont = (fontId: string) => {
     const font = FONTS.find(f => f.id === fontId)
