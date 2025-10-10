@@ -165,7 +165,29 @@ const THEMES: Theme[] = [
   { id: 'storm', name: 'Storm', colors: { primary: '#2c3e50', secondary: '#34495e', accent: '#f39c12', correct: '#27ae60', incorrect: '#e74c3c', textPrimary: '#ecf0f1', textSecondary: '#bdc3c7' }},
   { id: 'sunny', name: 'Sunny', colors: { primary: '#f39c12', secondary: '#e67e22', accent: '#f1c40f', correct: '#27ae60', incorrect: '#e74c3c', textPrimary: '#2c3e50', textSecondary: '#7f8c8d' }},
   { id: 'rainy', name: 'Rainy', colors: { primary: '#34495e', secondary: '#2c3e50', accent: '#3498db', correct: '#2ecc71', incorrect: '#e74c3c', textPrimary: '#ecf0f1', textSecondary: '#95a5a6' }},
-  { id: 'snowy', name: 'Snowy', colors: { primary: '#ecf0f1', secondary: '#bdc3c7', accent: '#3498db', correct: '#27ae60', incorrect: '#e74c3c', textPrimary: '#2c3e50', textSecondary: '#7f8c8d' }}
+  { id: 'snowy', name: 'Snowy', colors: { primary: '#ecf0f1', secondary: '#bdc3c7', accent: '#3498db', correct: '#27ae60', incorrect: '#e74c3c', textPrimary: '#2c3e50', textSecondary: '#7f8c8d' }},
+  
+  // 20 More Super Unique & Creative Colorways
+  { id: 'holographic', name: 'Holographic', colors: { primary: '#1a0033', secondary: '#330066', accent: '#ff00ff', correct: '#00ffcc', incorrect: '#ff3366', textPrimary: '#ccffff', textSecondary: '#9966ff' }},
+  { id: 'phantom', name: 'Phantom', colors: { primary: '#0f0f0f', secondary: '#1f1f1f', accent: '#666666', correct: '#999999', incorrect: '#333333', textPrimary: '#cccccc', textSecondary: '#888888' }},
+  { id: 'prismatic', name: 'Prismatic', colors: { primary: '#000033', secondary: '#003366', accent: '#00ccff', correct: '#66ff99', incorrect: '#ff6699', textPrimary: '#ffffff', textSecondary: '#99ccff' }},
+  { id: 'molten-lava', name: 'Molten Lava', colors: { primary: '#330000', secondary: '#660000', accent: '#ff3300', correct: '#ffcc00', incorrect: '#990000', textPrimary: '#ffcccc', textSecondary: '#ff9966' }},
+  { id: 'arctic-aurora', name: 'Arctic Aurora', colors: { primary: '#001133', secondary: '#002266', accent: '#00ff99', correct: '#66ffcc', incorrect: '#ff3399', textPrimary: '#ccffff', textSecondary: '#99ffcc' }},
+  { id: 'digital-dream', name: 'Digital Dream', colors: { primary: '#110033', secondary: '#220066', accent: '#aa00ff', correct: '#00ffaa', incorrect: '#ff0099', textPrimary: '#ddccff', textSecondary: '#bb99ff' }},
+  { id: 'cosmic-dust', name: 'Cosmic Dust', colors: { primary: '#1a0f1a', secondary: '#331e33', accent: '#b366b3', correct: '#66cc66', incorrect: '#cc3366', textPrimary: '#e6cce6', textSecondary: '#cc99cc' }},
+  { id: 'neon-nights', name: 'Neon Nights', colors: { primary: '#0a0a0a', secondary: '#1a0a1a', accent: '#ff0088', correct: '#88ff00', incorrect: '#ff4400', textPrimary: '#ff88dd', textSecondary: '#cc44aa' }},
+  { id: 'crystalline', name: 'Crystalline', colors: { primary: '#f0f8ff', secondary: '#e0f0ff', accent: '#4080ff', correct: '#00cc88', incorrect: '#ff4466', textPrimary: '#003366', textSecondary: '#0066aa' }},
+  { id: 'shadow-realm', name: 'Shadow Realm', colors: { primary: '#0d0d0d', secondary: '#1a1a1a', accent: '#4d0080', correct: '#008040', incorrect: '#800040', textPrimary: '#cccccc', textSecondary: '#999999' }},
+  { id: 'golden-hour-dream', name: 'Golden Hour Dream', colors: { primary: '#2a1f0d', secondary: '#4a351a', accent: '#ffcc33', correct: '#99cc33', incorrect: '#cc3333', textPrimary: '#ffe099', textSecondary: '#ccaa66' }},
+  { id: 'electric-storm', name: 'Electric Storm', colors: { primary: '#001a33', secondary: '#003366', accent: '#0099ff', correct: '#33cc99', incorrect: '#cc3399', textPrimary: '#ccf0ff', textSecondary: '#99ddff' }},
+  { id: 'cherry-blossom', name: 'Cherry Blossom', colors: { primary: '#ffe6f0', secondary: '#ffccdd', accent: '#ff6699', correct: '#66cc99', incorrect: '#cc6666', textPrimary: '#663344', textSecondary: '#996666' }},
+  { id: 'void-walker', name: 'Void Walker', colors: { primary: '#000000', secondary: '#0d0d0d', accent: '#800080', correct: '#408040', incorrect: '#804040', textPrimary: '#cccccc', textSecondary: '#999999' }},
+  { id: 'plasma-wave', name: 'Plasma Wave', colors: { primary: '#1a001a', secondary: '#330033', accent: '#ff33ff', correct: '#33ff99', incorrect: '#ff3366', textPrimary: '#ffccff', textSecondary: '#cc99cc' }},
+  { id: 'frost-bite', name: 'Frost Bite', colors: { primary: '#e6f7ff', secondary: '#ccf0ff', accent: '#0080cc', correct: '#00cc80', incorrect: '#cc4080', textPrimary: '#003366', textSecondary: '#0066aa' }},
+  { id: 'quantum-flux', name: 'Quantum Flux', colors: { primary: '#0f0f1f', secondary: '#1f1f3f', accent: '#8080ff', correct: '#80ff80', incorrect: '#ff8080', textPrimary: '#e0e0ff', textSecondary: '#c0c0ff' }},
+  { id: 'solar-flare', name: 'Solar Flare', colors: { primary: '#331100', secondary: '#662200', accent: '#ffaa00', correct: '#88cc44', incorrect: '#cc4444', textPrimary: '#ffdd88', textSecondary: '#ffbb44' }},
+  { id: 'mystic-forest', name: 'Mystic Forest', colors: { primary: '#0d2818', secondary: '#1a4030', accent: '#66cc66', correct: '#99dd99', incorrect: '#cc6666', textPrimary: '#ccffcc', textSecondary: '#99dd99' }},
+  { id: 'galactic-core', name: 'Galactic Core', colors: { primary: '#1a0066', secondary: '#3300cc', accent: '#cc66ff', correct: '#66ffcc', incorrect: '#ff6699', textPrimary: '#f0e6ff', textSecondary: '#d4b3ff' }}
 ]
 
 const FONTS: Font[] = [
@@ -219,7 +241,34 @@ const FONTS: Font[] = [
   { id: 'lexend', name: 'Lexend', family: 'Lexend, sans-serif', category: 'display' },
   { id: 'comfortaa', name: 'Comfortaa', family: 'Comfortaa, sans-serif', category: 'display' },
   { id: 'quicksand', name: 'Quicksand', family: 'Quicksand, sans-serif', category: 'display' },
-  { id: 'space-grotesk', name: 'Space Grotesk', family: 'Space Grotesk, sans-serif', category: 'display' }
+  { id: 'space-grotesk', name: 'Space Grotesk', family: 'Space Grotesk, sans-serif', category: 'display' },
+  
+  // 25 More Creative Google Fonts
+  { id: 'bebas-neue', name: 'Bebas Neue', family: 'Bebas Neue, sans-serif', category: 'display' },
+  { id: 'righteous', name: 'Righteous', family: 'Righteous, sans-serif', category: 'display' },
+  { id: 'fredoka-one', name: 'Fredoka One', family: 'Fredoka One, sans-serif', category: 'display' },
+  { id: 'kalam', name: 'Kalam', family: 'Kalam, handwriting', category: 'handwriting' },
+  { id: 'caveat', name: 'Caveat', family: 'Caveat, handwriting', category: 'handwriting' },
+  { id: 'dancing-script', name: 'Dancing Script', family: 'Dancing Script, handwriting', category: 'handwriting' },
+  { id: 'pacifico', name: 'Pacifico', family: 'Pacifico, handwriting', category: 'handwriting' },
+  { id: 'satisfy', name: 'Satisfy', family: 'Satisfy, handwriting', category: 'handwriting' },
+  { id: 'architects-daughter', name: 'Architects Daughter', family: 'Architects Daughter, handwriting', category: 'handwriting' },
+  { id: 'indie-flower', name: 'Indie Flower', family: 'Indie Flower, handwriting', category: 'handwriting' },
+  { id: 'bangers', name: 'Bangers', family: 'Bangers, display', category: 'display' },
+  { id: 'bungee', name: 'Bungee', family: 'Bungee, display', category: 'display' },
+  { id: 'creepster', name: 'Creepster', family: 'Creepster, display', category: 'display' },
+  { id: 'fascinate', name: 'Fascinate', family: 'Fascinate, display', category: 'display' },
+  { id: 'griffy', name: 'Griffy', family: 'Griffy, display', category: 'display' },
+  { id: 'jolly-lodger', name: 'Jolly Lodger', family: 'Jolly Lodger, display', category: 'display' },
+  { id: 'kaushan-script', name: 'Kaushan Script', family: 'Kaushan Script, handwriting', category: 'handwriting' },
+  { id: 'lobster', name: 'Lobster', family: 'Lobster, display', category: 'display' },
+  { id: 'monoton', name: 'Monoton', family: 'Monoton, display', category: 'display' },
+  { id: 'nosifer', name: 'Nosifer', family: 'Nosifer, display', category: 'display' },
+  { id: 'orbitron-new', name: 'Orbitron', family: 'Orbitron, sans-serif', category: 'display' },
+  { id: 'press-start-2p', name: 'Press Start 2P', family: 'Press Start 2P, monospace', category: 'monospace' },
+  { id: 'russo-one', name: 'Russo One', family: 'Russo One, sans-serif', category: 'display' },
+  { id: 'stardos-stencil', name: 'Stardos Stencil', family: 'Stardos Stencil, display', category: 'display' },
+  { id: 'vampire-wars', name: 'Creepy', family: 'Creepster, display', category: 'display' }
 ]
 
 export default function SettingsPage() {
@@ -477,9 +526,7 @@ export default function SettingsPage() {
                     {theme.name}
                   </div>
                   
-                  <div className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                    123 + 456 = ?
-                  </div>
+
 
                   <div className="theme-colors">
                     <div className="color-dot" style={{ backgroundColor: theme.colors.primary }} title="Primary" />
@@ -517,14 +564,8 @@ export default function SettingsPage() {
                 onClick={() => handleFontChange(font.id)}
               >
                 <div className="font-preview" style={{ fontFamily: font.family }}>
-                  {font.category === 'display' ? (
-                    <div className="glow-text">42 + 18 = 60</div>
-                  ) : (
-                    '42 + 18 = 60'
-                  )}
+                  {font.name}
                 </div>
-                <div className="font-name">{font.name}</div>
-                <div className="font-category">{font.category}</div>
                 {currentFont === font.id && (
                   <div className="text-accent text-xs font-bold mt-2">✓ ACTIVE</div>
                 )}

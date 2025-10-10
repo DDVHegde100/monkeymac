@@ -96,12 +96,7 @@ export default function KeyboardShortcuts() {
         description: 'Set difficulty to Abstract',
         action: () => setDifficulty('abstract')
       },
-      {
-        key: 'f',
-        ctrlKey: true,
-        description: 'Toggle focus mode',
-        action: () => toggleFocusMode()
-      },
+
       {
         key: '/',
         description: 'Show/hide shortcuts',
@@ -147,34 +142,7 @@ export default function KeyboardShortcuts() {
     }
   }
 
-  const toggleFocusMode = () => {
-    document.body.classList.toggle('focus-mode')
-    
-    // Add focus mode styles if not already added
-    if (!document.getElementById('focus-mode-styles')) {
-      const style = document.createElement('style')
-      style.id = 'focus-mode-styles'
-      style.textContent = `
-        .focus-mode {
-          background: #000 !important;
-        }
-        .focus-mode * {
-          background: transparent !important;
-          border-color: #333 !important;
-        }
-        .focus-mode .test-container {
-          background: #111 !important;
-        }
-        .focus-mode .navbar {
-          display: none !important;
-        }
-        .focus-mode .stats-sidebar {
-          opacity: 0.3;
-        }
-      `
-      document.head.appendChild(style)
-    }
-  }
+
 
   const formatShortcut = (shortcut: Shortcut) => {
     const parts: string[] = []
@@ -233,95 +201,4 @@ export default function KeyboardShortcuts() {
   )
 }
 
-// Advanced focus mode component
-export function AdvancedFocusMode() {
-  const [focusMode, setFocusMode] = useState(false)
-  const [zenMode, setZenMode] = useState(false)
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'F11') {
-        event.preventDefault()
-        toggleZenMode()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
-  const toggleZenMode = () => {
-    setZenMode(!zenMode)
-    
-    if (!zenMode) {
-      // Enter zen mode
-      document.body.classList.add('zen-mode')
-      
-      // Add zen mode styles
-      if (!document.getElementById('zen-mode-styles')) {
-        const style = document.createElement('style')
-        style.id = 'zen-mode-styles'
-        style.textContent = `
-          .zen-mode {
-            background: #0a0a0a !important;
-          }
-          .zen-mode .navbar,
-          .zen-mode .sidebar,
-          .zen-mode .footer,
-          .zen-mode .stats-sidebar {
-            display: none !important;
-          }
-          .zen-mode .test-container {
-            height: 100vh !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background: transparent !important;
-          }
-          .zen-mode .test-content {
-            text-align: center !important;
-            max-width: 800px !important;
-          }
-          .zen-mode * {
-            border-color: #222 !important;
-          }
-          .zen-mode .performance-monitor {
-            display: none !important;
-          }
-        `
-        document.head.appendChild(style)
-      }
-    } else {
-      // Exit zen mode
-      document.body.classList.remove('zen-mode')
-    }
-  }
-
-  return (
-    <div className="fixed top-4 right-4 z-40 flex space-x-2">
-      <button
-        onClick={() => setFocusMode(!focusMode)}
-        className={`px-3 py-1 rounded text-xs transition-colors ${
-          focusMode 
-            ? 'bg-main text-bg' 
-            : 'bg-bg-secondary border border-sub text-sub hover:text-text'
-        }`}
-        title="Focus Mode (Ctrl+F)"
-      >
-        Focus
-      </button>
-      
-      <button
-        onClick={toggleZenMode}
-        className={`px-3 py-1 rounded text-xs transition-colors ${
-          zenMode 
-            ? 'bg-main text-bg' 
-            : 'bg-bg-secondary border border-sub text-sub hover:text-text'
-        }`}
-        title="Zen Mode (F11)"
-      >
-        Zen
-      </button>
-    </div>
-  )
-}

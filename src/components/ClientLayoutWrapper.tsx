@@ -2,14 +2,13 @@
 
 import { ThemeProvider } from '../contexts/ThemeContext'
 import PerformanceMonitor, { MobileOptimizations, MobileCSS } from './PerformanceMonitor'
-import KeyboardShortcuts, { AdvancedFocusMode } from './KeyboardShortcuts'
+import KeyboardShortcuts from './KeyboardShortcuts'
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <MobileCSS />
       <MobileOptimizations />
-      <AdvancedFocusMode />
       {children}
       <PerformanceMonitor />
       <KeyboardShortcuts />

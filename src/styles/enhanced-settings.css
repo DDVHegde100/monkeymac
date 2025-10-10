@@ -1,8 +1,8 @@
 /* Enhanced Settings CSS */
 .theme-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
   max-height: 400px;
   overflow-y: auto;
   padding: 1rem;
@@ -12,12 +12,12 @@
 
 .theme-card {
   position: relative;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
-  min-height: 120px;
+  min-height: 80px;
 }
 
 .theme-card:hover {
@@ -31,7 +31,7 @@
 }
 
 .theme-preview {
-  padding: 1rem;
+  padding: 0.75rem;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -39,9 +39,9 @@
 }
 
 .theme-name {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .theme-colors {
@@ -59,8 +59,8 @@
 
 .font-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
   max-height: 300px;
   overflow-y: auto;
   padding: 1rem;
@@ -69,12 +69,16 @@
 }
 
 .font-card {
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 0.5rem;
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.3s ease;
   background: var(--color-bg-secondary);
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .font-card:hover {
@@ -96,23 +100,9 @@
 }
 
 .font-preview {
-  font-size: 1.125rem;
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-
-.font-name {
   font-size: 0.875rem;
-  opacity: 0.8;
-  font-family: system-ui, sans-serif !important;
-}
-
-.font-category {
-  font-size: 0.75rem;
-  opacity: 0.6;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.25rem;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .font-size-controls {
