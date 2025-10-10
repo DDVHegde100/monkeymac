@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '../../../../lib/mongodb'
 
-// Function to send SMS using Textbelt (free service)
+// Multiple SMS service options with fallback
 async function sendSMS(phoneNumber: string, message: string) {
+  // Try Twilio first (most reliable)
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+    try {
+      const twilio = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+      
+      await twilio.messages.create({
+        body: message,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: `+1${phoneNumber}`
+      })
+      
+      console.log(`SMS sent successfully via Twilio to ${phoneNumber}`)
+      return { success: true, provider: 'Twilio' }
+    } catch (error) {
+      console.error('Twilio SMS failed:', error)
+    }
+  }
+
+  // Fallback to Textbelt (free but limited)
   try {
     const response = await fetch('https://textbelt.com/text', {
       method: 'POST',
@@ -12,23 +31,48 @@ async function sendSMS(phoneNumber: string, message: string) {
       body: JSON.stringify({
         phone: `+1${phoneNumber}`,
         message: message,
-        key: 'textbelt', // Free tier key (limited messages per day)
+        key: 'textbelt',
       }),
     })
 
     const result = await response.json()
     
     if (result.success) {
-      console.log(`SMS sent successfully to ${phoneNumber}`)
-      return true
+      console.log(`SMS sent successfully via Textbelt to ${phoneNumber}`)
+      return { success: true, provider: 'Textbelt' }
     } else {
-      console.error('SMS send failed:', result.error)
-      return false
+      console.error('Textbelt SMS failed:', result.error)
     }
   } catch (error) {
-    console.error('SMS service error:', error)
-    return false
+    console.error('Textbelt SMS error:', error)
   }
+
+  // Fallback to SMS API (another free option)
+  try {
+    const response = await fetch('https://api.sms.to/sms/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.SMS_TO_API_KEY || 'demo'}`
+      },
+      body: JSON.stringify({
+        to: `+1${phoneNumber}`,
+        message: message,
+        sender_id: 'MonkeyMac'
+      }),
+    })
+
+    const result = await response.json()
+    
+    if (result.success || result.status === 'success') {
+      console.log(`SMS sent successfully via SMS.to to ${phoneNumber}`)
+      return { success: true, provider: 'SMS.to' }
+    }
+  } catch (error) {
+    console.error('SMS.to API error:', error)
+  }
+
+  return { success: false, provider: 'none' }
 }
 
 export async function POST(request: NextRequest) {
@@ -62,11 +106,11 @@ export async function POST(request: NextRequest) {
 
     // Send actual SMS
     const smsMessage = `Your MonkeyMac verification code is: ${code}. This code expires in 5 minutes.`
-    const smsSent = await sendSMS(phoneNumber, smsMessage)
+    const smsResult = await sendSMS(phoneNumber, smsMessage)
 
-    if (!smsSent) {
+    if (!smsResult.success) {
       return NextResponse.json(
-        { error: 'Failed to send SMS. Please try again.' },
+        { error: 'Failed to send SMS. Please check your phone number and try again.' },
         { status: 500 }
       )
     }
