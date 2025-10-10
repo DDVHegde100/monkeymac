@@ -91,13 +91,18 @@ export default function MathTest() {
   useEffect(() => {
     const handleFocus = () => {
       if (!isAuthenticated) {
-        checkAuthStatus()
+        // Add a small delay to allow for navigation to complete
+        setTimeout(() => {
+          checkAuthStatus()
+        }, 100)
       }
     }
 
     const handleVisibilityChange = () => {
       if (!document.hidden && !isAuthenticated) {
-        checkAuthStatus()
+        setTimeout(() => {
+          checkAuthStatus()
+        }, 100)
       }
     }
 
@@ -109,6 +114,17 @@ export default function MathTest() {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [isAuthenticated])
+
+  // Also re-check auth periodically when not authenticated (for better UX)
+  useEffect(() => {
+    if (!isAuthenticated && !loading) {
+      const interval = setInterval(() => {
+        checkAuthStatus()
+      }, 2000) // Check every 2 seconds
+
+      return () => clearInterval(interval)
+    }
+  }, [isAuthenticated, loading])
 
   // Load user preferences
   useEffect(() => {
