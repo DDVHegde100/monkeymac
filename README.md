@@ -1,178 +1,255 @@
-# MonkeyMac 🐒🧮
+# MonkeyMac
 
-A modern mental math training application inspired by MonkeyType's sleek design and Zetamac's mathematical focus. Practice arithmetic with style and track your progress over time.
+![MonkeyMac Banner](public/monk.png)
 
-## Features
+**Live Demo**: [monkeymac.vercel.app](https://monkeymac.vercel.app)
 
-- **Speed Math Tests**: Practice addition, subtraction, multiplication, and division
-- **User Authentication**: Register and login to track your progress
-- **Statistics Tracking**: Monitor your improvement with detailed stats
-- **MonkeyType-inspired UI**: Clean, modern dark theme interface
-- **Real-time Testing**: 60-second timed tests with immediate feedback
-- **Progress Analytics**: Track accuracy, speed, and improvement trends
+A comprehensive mental math training application that combines the aesthetic excellence of MonkeyType with the mathematical rigor of Zetamac. This is an application idea I have been wanting to make for a while since I love practicing with MonkeyType and I have recently started to do Zetamac as well. It's unfortunate for how good Zetamac is that it doesn't have any sort of tracking functionality or anything, so I decided to change that in order to be able to track my progress and see how much I can improve over time for different difficulties of problems.
 
-## Tech Stack
+Of course, I will be making changes to this application, and some features I have forthcoming include adding leaderboards, daily speedrun challenges with problem sets, and badges, along with exclusive styling and such. Feel free to let me know if you have any changes you have in mind or if there is a critical feature I missed in issues. I would already appreciate if you could star this repo if you enjoy my product.
 
-- **Frontend**: Next.js 14 with React 18
-- **Styling**: Tailwind CSS with custom MonkeyType-inspired theme
-- **Backend**: Next.js API Routes
-- **Database**: MongoDB
-- **Authentication**: JWT with bcrypt password hashing
-- **Deployment**: Vercel-ready configuration
+## Technical Stack
 
-## Getting Started
+### Framework & Runtime
+- **Next.js 14.2.33** - React-based full-stack framework with App Router
+- **React 18** - Component-based UI library with hooks and concurrent features
+- **TypeScript** - Static type checking for enhanced development experience
+- **Node.js** - JavaScript runtime for server-side operations
 
-### Prerequisites
+### Styling & UI
+- **Tailwind CSS 3.4.1** - Utility-first CSS framework for rapid styling
+- **Custom CSS Modules** - Component-scoped styling with CSS variables
+- **Google Fonts Integration** - 25+ typography options including Fira Code, JetBrains Mono, Roboto Mono
+- **Responsive Design** - Mobile-first approach with breakpoint-based layouts
 
-- Node.js 18+ 
-- MongoDB database (local or cloud)
-- npm or yarn
+### Database & Authentication
+- **MongoDB** - NoSQL document database with aggregation pipeline support
+- **bcryptjs** - Password hashing with configurable salt rounds (12 rounds)
+- **JWT (jsonwebtoken)** - Stateless authentication with secure token signing
+- **Cookie-based Sessions** - HTTP-only cookies for enhanced security
 
-### Installation
+### Deployment & Infrastructure
+- **Vercel** - Edge-optimized deployment with automatic CI/CD
+- **MongoDB Atlas** - Cloud-hosted database with automatic scaling
+- **GitHub Integration** - Version control with automated deployments
 
-1. Clone the repository:
-   ```bash
-   git clone <your-repo-url>
-   cd monkeymax
-   ```
+## Architecture Overview
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Fill in your environment variables:
-   ```
-   MONGODB_URI=mongodb://localhost:27017/monkeymax
-   JWT_SECRET=your-super-secret-jwt-key
-   ```
-
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## Project Structure
-
+### File Structure
 ```
-monkeymax/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── api/               # API routes
-│   │   │   └── auth/          # Authentication endpoints
-│   │   ├── test/              # Math test page
-│   │   ├── login/             # Login page
-│   │   ├── register/          # Registration page
-│   │   ├── globals.css        # Global styles
-│   │   ├── layout.tsx         # Root layout
-│   │   └── page.tsx           # Homepage
-│   └── components/            # Reusable React components
-├── .github/                   # GitHub configuration
-├── public/                    # Static assets
-└── package.json              # Dependencies and scripts
+src/
+├── app/                          # Next.js App Router pages
+│   ├── api/                      # Server-side API endpoints
+│   │   ├── auth/                 # Authentication routes
+│   │   │   ├── login/route.ts    # POST /api/auth/login
+│   │   │   ├── logout/route.ts   # POST /api/auth/logout
+│   │   │   ├── me/route.ts       # GET /api/auth/me
+│   │   │   └── register/route.ts # POST /api/auth/register
+│   │   ├── test/                 # Test management
+│   │   │   └── save-result/route.ts # POST /api/test/save-result
+│   │   └── user/                 # User data endpoints
+│   │       ├── analytics/route.ts    # GET /api/user/analytics
+│   │       ├── insights/route.ts     # GET /api/user/insights
+│   │       ├── leaderboards/route.ts # GET /api/user/leaderboards
+│   │       ├── operation-stats/route.ts # GET /api/user/operation-stats
+│   │       ├── performance/route.ts  # GET /api/user/performance
+│   │       ├── preferences/route.ts  # GET/POST /api/user/preferences
+│   │       ├── search/route.ts       # GET /api/user/search
+│   │       ├── stats/route.ts        # GET /api/user/stats
+│   │       └── test-history/route.ts # GET /api/user/test-history
+│   ├── analytics/page.tsx        # Performance analytics dashboard
+│   ├── history/page.tsx          # Test history with filtering
+│   ├── leaderboards/page.tsx     # Global rankings
+│   ├── login/page.tsx            # Authentication form
+│   ├── register/page.tsx         # User registration
+│   ├── search/page.tsx           # User search functionality
+│   ├── settings/page.tsx         # Theme and preference management
+│   ├── stats/page.tsx            # Personal statistics
+│   ├── test/page.tsx             # Core math testing interface
+│   ├── globals.css               # Global styles and CSS variables
+│   ├── layout.tsx                # Root layout with providers
+│   └── page.tsx                  # Landing page
+├── components/                   # Reusable React components
+│   ├── ClientLayoutWrapper.tsx   # Client-side layout logic
+│   ├── KeyboardShortcuts.tsx     # Global keyboard event handling
+│   ├── LoadingScreen.tsx         # Application loading states
+│   ├── Navbar.tsx                # Navigation component
+│   ├── OnboardingFlow.tsx        # New user setup wizard
+│   ├── PerformanceMonitor.tsx    # Real-time performance tracking
+│   └── SmartDashboard.tsx        # Intelligent dashboard with insights
+└── lib/
+    └── mongodb.ts                # Database connection and utilities
 ```
 
-## API Endpoints
+### Core Components
 
-### Authentication
-- `POST /api/auth/register` - Create new user account
-- `POST /api/auth/login` - User login
+#### Test Engine (`/test/page.tsx`)
+- **Problem Generation**: Dynamic arithmetic problem creation with configurable difficulty
+- **Timer System**: Precise countdown with millisecond accuracy
+- **Input Validation**: Real-time answer checking with immediate feedback
+- **Performance Tracking**: WPM calculation, accuracy measurement, and streak counting
+- **Auto-advance Logic**: Seamless problem progression with customizable settings
 
-### Test Results (Coming Soon)
-- `POST /api/results` - Save test results
-- `GET /api/results` - Get user's test history
-- `GET /api/stats` - Get user statistics
+#### Analytics System (`/analytics/page.tsx`)
+- **Performance Metrics**: Comprehensive analysis of speed, accuracy, and improvement trends
+- **Difficulty Breakdown**: Per-operation statistics with visual representations
+- **Time Pattern Analysis**: Peak performance identification and scheduling recommendations
+- **Predictive Insights**: AI-powered suggestions for improvement strategies
 
-## Database Schema
+#### Authentication Flow
+- **Registration**: Phone number collection, password hashing, user profile creation
+- **Login**: Credential validation, JWT generation, session management
+- **Session Persistence**: Automatic token refresh and secure logout
 
-### Users Collection
-```javascript
-{
-  _id: ObjectId,
-  username: String,
-  email: String,
-  password: String (hashed),
-  createdAt: Date,
+#### Database Schema
+
+##### Users Collection
+```typescript
+interface User {
+  _id: ObjectId
+  firstName: string
+  username: string
+  phone: string
+  password: string // bcrypt hashed
+  createdAt: Date
   stats: {
-    totalTests: Number,
-    bestScore: Number,
-    averageScore: Number,
-    totalProblems: Number,
-    accuracy: Number
+    totalTests: number
+    bestScore: number
+    averageScore: number
+    totalProblems: number
+    accuracy: number
+    currentStreak: number
+    longestStreak: number
+    totalTimeSpent: number
+    averagePPM: number
+    testsRestarted: number
+  }
+  preferences?: {
+    difficulty: 'easy' | 'medium' | 'hard'
+    operations: string[]
+    duration: number
+    theme: string
+    font: string
   }
 }
 ```
 
-### Test Results Collection (Coming Soon)
-```javascript
-{
-  _id: ObjectId,
-  userId: ObjectId,
-  score: Number,
-  totalProblems: Number,
-  correctAnswers: Number,
-  timeLimit: Number,
-  testDate: Date,
-  problemTypes: [String]
+##### Test Results Collection
+```typescript
+interface TestResult {
+  _id: ObjectId
+  userId: ObjectId
+  score: number
+  totalProblems: number
+  correctAnswers: number
+  accuracy: number
+  duration: number
+  difficulty: string
+  operations: string[]
+  averageTimePerProblem: number
+  problemsPerMinute: number
+  testDate: Date
+  problems: Array<{
+    question: string
+    userAnswer: number
+    correctAnswer: number
+    isCorrect: boolean
+    timeSpent: number
+    operation: string
+  }>
 }
 ```
 
-## Deployment
+##### Performance Metrics Collection
+```typescript
+interface PerformanceMetric {
+  _id: ObjectId
+  userId: ObjectId
+  date: Date
+  totalTests: number
+  averageScore: number
+  bestScore: number
+  totalProblems: number
+  accuracy: number
+  operationBreakdown: {
+    [operation: string]: {
+      totalProblems: number
+      correctAnswers: number
+      averageTime: number
+      accuracy: number
+    }
+  }
+}
+```
 
-### Vercel Deployment
+## API Architecture
 
-1. Install Vercel CLI:
-   ```bash
-   npm i -g vercel
-   ```
+### Authentication Middleware
+All protected routes implement JWT validation with automatic token refresh and user session management.
 
-2. Login to Vercel:
-   ```bash
-   vercel login
-   ```
+### Error Handling
+Comprehensive error handling with standardized response formats and appropriate HTTP status codes.
 
-3. Deploy:
-   ```bash
-   vercel --prod
-   ```
+### Data Validation
+Input sanitization and validation using TypeScript interfaces and runtime checks.
 
-### Environment Variables for Production
+### Performance Optimization
+- **Database Indexing**: Optimized queries with compound indexes on user operations
+- **Caching Strategy**: Session caching and query result optimization
+- **Lazy Loading**: Component-level code splitting for faster initial loads
 
-Set these in your Vercel dashboard:
-- `MONGODB_URI` - Your MongoDB connection string
-- `JWT_SECRET` - Secure random string for JWT signing
+## Development Setup
+
+### Prerequisites
+- Node.js 18.17.0 or higher
+- MongoDB 6.0+ (local or Atlas)
+- Git for version control
+
+### Local Development
+```bash
+# Clone repository
+git clone https://github.com/DDVHegde100/monkeymac.git
+cd monkeymac
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your MongoDB URI and JWT secret
+
+# Start development server
+npm run dev
+```
+
+### Environment Configuration
+```bash
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/monkeymax
+JWT_SECRET=your-256-bit-secret-key
+NEXTAUTH_SECRET=additional-auth-secret
+```
+
+### Build and Deployment
+```bash
+# Production build
+npm run build
+
+# Deploy to Vercel
+vercel --prod
+```
+
+## Performance Metrics
+
+The application implements comprehensive performance tracking including:
+- **Response Time Monitoring**: API endpoint latency measurement
+- **Database Query Optimization**: Aggregation pipeline efficiency
+- **Client-Side Performance**: Component render time and memory usage
+- **User Experience Metrics**: Test completion rates and engagement analytics
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Commit changes: `git commit -am 'Add new feature'`
-4. Push to branch: `git push origin feature/new-feature`
-5. Submit a Pull Request
-
-## Features Coming Soon
-
-- [ ] Dashboard with detailed statistics
-- [ ] Leaderboards and rankings  
-- [ ] Different test modes (custom time limits, specific operations)
-- [ ] Achievement system
-- [ ] Test history and analytics
-- [ ] Social features (friend comparisons)
-- [ ] Mobile responsive design improvements
-- [ ] Keyboard shortcuts for power users
+This project follows standard Git workflow practices. Please ensure all commits include appropriate TypeScript types and comprehensive error handling. Feature requests and bug reports are welcome through GitHub Issues.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Inspired by [MonkeyType](https://monkeytype.com) for the clean UI design
-- Inspired by [Zetamac](https://arithmetic.zetamac.com) for the math testing concept
+MIT License - see LICENSE file for details.
