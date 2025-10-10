@@ -15,6 +15,7 @@ interface UserStats {
   currentStreak: number
   longestStreak: number
   favoriteOperation: string
+  testsRestarted: number
   recentTests: Array<{
     id: string
     score: number
@@ -161,13 +162,28 @@ export default function StatsPage() {
 
           {stats ? (
             <div className="space-y-8">
-              {/* Overview Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Core Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard 
-                  title="Tests Completed" 
+                  title="Average PPM" 
+                  value={stats.averagePPM || 0} 
+                  subtitle="problems per minute"
+                  icon="⚡"
+                />
+                <StatCard 
+                  title="Tests Taken" 
                   value={stats.totalTests} 
                   icon="🎯"
                 />
+                <StatCard 
+                  title="Tests Restarted" 
+                  value={stats.testsRestarted || 0} 
+                  icon="🔄"
+                />
+              </div>
+
+              {/* Overview Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard 
                   title="Best Score" 
                   value={stats.bestScore} 
@@ -184,26 +200,32 @@ export default function StatsPage() {
                   value={stats.totalProblems.toLocaleString()} 
                   icon="📝"
                 />
-              </div>
-
-              {/* Performance Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <StatCard 
-                  title="Average PPM" 
-                  value={stats.averagePPM || 0} 
-                  subtitle="problems per minute"
-                  icon="⚡"
-                />
                 <StatCard 
                   title="Time Spent Training" 
                   value={formatTime(stats.totalTimeSpent || 0)} 
                   icon="⏱️"
+                />
+              </div>
+
+              {/* Performance Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <StatCard 
+                  title="Average Score" 
+                  value={Math.round(stats.averageScore)} 
+                  subtitle="problems per minute"
+                  icon="📊"
                 />
                 <StatCard 
                   title="Current Streak" 
                   value={stats.currentStreak || 0} 
                   subtitle="days"
                   icon="🔥"
+                />
+                <StatCard 
+                  title="Completion Rate" 
+                  value={stats.totalTests > 0 ? `${Math.round(((stats.totalTests - (stats.testsRestarted || 0)) / stats.totalTests) * 100)}%` : '0%'} 
+                  subtitle="tests finished"
+                  icon="✅"
                 />
               </div>
 
