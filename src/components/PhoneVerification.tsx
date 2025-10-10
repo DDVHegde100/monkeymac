@@ -245,7 +245,7 @@ export default function PhoneVerification({ onVerified, onCancel }: PhoneVerific
                 disabled={loading}
                 className="text-sm text-accent hover:underline disabled:opacity-50"
               >
-                Didn't receive code? Resend
+                Didn&apos;t receive code? Resend
               </button>
             </div>
           </form>
