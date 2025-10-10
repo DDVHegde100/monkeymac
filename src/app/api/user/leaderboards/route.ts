@@ -525,7 +525,8 @@ function checkConsistentAccuracy(tests: any[]) {
 
 function checkAllDifficulties(tests: any[]) {
   const difficulties = new Set(tests.map((t: any) => t.difficulty))
-  return difficulties.has('easy') && difficulties.has('medium') && difficulties.has('hard') && difficulties.has('abstract')
+  const difficultyArray = Array.from(difficulties)
+  return difficultyArray.includes('easy') && difficultyArray.includes('medium') && difficultyArray.includes('hard') && difficultyArray.includes('abstract')
 }
 
 function checkDifficultyMastery(tests: any[], difficulty: string, targetScore: number, minTests: number) {
@@ -540,7 +541,8 @@ function checkDailyStreak(tests: any[], targetDays: number) {
   if (tests.length === 0) return false
   
   const testDates = tests.map((t: any) => new Date(t.createdAt).toDateString())
-  const uniqueDates = [...new Set(testDates)].sort()
+  const uniqueDatesSet = new Set(testDates)
+  const uniqueDates = Array.from(uniqueDatesSet).sort()
   
   let currentStreak = 1
   let maxStreak = 1
