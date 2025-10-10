@@ -158,6 +158,171 @@ export default function StatsPage() {
     )
   }
 
+  const ProgressionLineChart = ({ recentTests }: { recentTests: any[] }) => {
+    // Sort tests by date and take last 20 for better visualization
+    const sortedTests = [...recentTests]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-20)
+
+    if (sortedTests.length < 2) {
+      return (
+        <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700">
+          <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
+            <span className="mr-3">📈</span>
+            Progression & Improvement
+          </h2>
+          <div className="text-center text-text-secondary py-8">
+            <div className="text-4xl mb-2">📊</div>
+            <p>Take more tests to see your progression chart!</p>
+            <p className="text-sm opacity-75 mt-1">Need at least 2 tests to show trends</p>
+          </div>
+        </div>
+      )
+    }
+
+    // Calculate metrics for each test
+    const dataPoints = sortedTests.map((test, index) => {
+      const ppm = test.duration > 0 ? Math.round((test.problems / (test.duration / 60))) : 0
+      return {
+        index: index + 1,
+        ppm,
+        accuracy: test.accuracy,
+        date: new Date(test.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      }
+    })
+
+    const maxPPM = Math.max(...dataPoints.map(d => d.ppm), 10)
+    const minPPM = Math.min(...dataPoints.map(d => d.ppm), 0)
+    const ppmRange = maxPPM - minPPM || 1
+
+    // Calculate trend
+    const firstPPM = dataPoints[0].ppm
+    const lastPPM = dataPoints[dataPoints.length - 1].ppm
+    const improvement = lastPPM - firstPPM
+    const improvementPercent = firstPPM > 0 ? ((improvement / firstPPM) * 100) : 0
+
+    // Generate SVG path for the line
+    const generatePath = (points: any[], getValue: (p: any) => number, maxValue: number, minValue: number) => {
+      const width = 600
+      const height = 200
+      const padding = 40
+      
+      const pathData = points.map((point, index) => {
+        const x = padding + (index / (points.length - 1)) * (width - 2 * padding)
+        const value = getValue(point)
+        const y = height - padding - ((value - minValue) / (maxValue - minValue || 1)) * (height - 2 * padding)
+        return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
+      }).join(' ')
+
+      return pathData
+    }
+
+    const ppmPath = generatePath(dataPoints, (p) => p.ppm, maxPPM, minPPM)
+
+    return (
+      <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700">
+        <div className="flex justify-between items-start mb-6">
+          <h2 className="text-2xl font-bold text-text-primary flex items-center">
+            <span className="mr-3">📈</span>
+            Progression & Improvement
+          </h2>
+          <div className="text-right">
+            <div className={`text-lg font-bold ${improvement >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {improvement >= 0 ? '+' : ''}{improvement} PPM
+            </div>
+            <div className={`text-sm ${improvementPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {improvementPercent >= 0 ? '+' : ''}{improvementPercent.toFixed(1)}% improvement
+            </div>
+          </div>
+        </div>
+
+        <div className="relative">
+          <svg width="100%" height="250" viewBox="0 0 600 250" className="overflow-visible">
+            {/* Grid lines */}
+            {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
+              <g key={ratio}>
+                <line
+                  x1="40"
+                  y1={210 - ratio * 160}
+                  x2="560"
+                  y2={210 - ratio * 160}
+                  stroke="#374151"
+                  strokeWidth="1"
+                  strokeDasharray="2,2"
+                />
+                <text
+                  x="30"
+                  y={215 - ratio * 160}
+                  fill="#9CA3AF"
+                  fontSize="10"
+                  textAnchor="end"
+                >
+                  {Math.round(minPPM + ratio * ppmRange)}
+                </text>
+              </g>
+            ))}
+
+            {/* PPM Line */}
+            <path
+              d={ppmPath}
+              fill="none"
+              stroke="url(#ppmGradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+
+            {/* Data points */}
+            {dataPoints.map((point, index) => {
+              const x = 40 + (index / (dataPoints.length - 1)) * 520
+              const y = 210 - ((point.ppm - minPPM) / ppmRange) * 160
+              return (
+                <g key={index}>
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r="4"
+                    fill="#F59E0B"
+                    stroke="#FEF3C7"
+                    strokeWidth="2"
+                  />
+                  <text
+                    x={x}
+                    y="240"
+                    fill="#9CA3AF"
+                    fontSize="10"
+                    textAnchor="middle"
+                  >
+                    {point.date}
+                  </text>
+                </g>
+              )
+            })}
+
+            {/* Gradient definition */}
+            <defs>
+              <linearGradient id="ppmGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#EF4444" />
+                <stop offset="50%" stopColor="#F59E0B" />
+                <stop offset="100%" stopColor="#10B981" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <div className="mt-4 flex justify-between text-sm text-text-secondary">
+          <div>
+            <span className="inline-block w-3 h-3 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full mr-2"></span>
+            Problems Per Minute (PPM)
+          </div>
+          <div>
+            Last {dataPoints.length} tests • Best: {Math.max(...dataPoints.map(d => d.ppm))} PPM
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const StatCard = ({ title, value, subtitle, icon }: { title: string, value: string | number, subtitle?: string, icon: string }) => (
     <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700 hover:border-accent/30 transition-colors">
       <div className="flex items-center justify-between mb-2">
@@ -336,10 +501,18 @@ export default function StatsPage() {
                 </div>
               </div>
 
-              {/* PPM Distribution Chart */}
-              {stats.recentTests && stats.recentTests.length > 0 && (
-                <PPMBarChart recentTests={stats.recentTests} />
-              )}
+              {/* Charts Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* PPM Distribution Chart */}
+                {stats.recentTests && stats.recentTests.length > 0 && (
+                  <PPMBarChart recentTests={stats.recentTests} />
+                )}
+
+                {/* Progression Chart */}
+                {stats.recentTests && stats.recentTests.length > 0 && (
+                  <ProgressionLineChart recentTests={stats.recentTests} />
+                )}
+              </div>
 
               {/* Recent Tests */}
               {stats.recentTests && stats.recentTests.length > 0 && (
