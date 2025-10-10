@@ -8,8 +8,18 @@ export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+
+  // Check for success message from registration
+  useState(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const message = urlParams.get('message')
+    if (message) {
+      setSuccess(message)
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,8 +96,16 @@ export default function LoginPage() {
             />
           </div>
 
+          {success && (
+            <div className="text-green-400 text-sm text-center p-3 bg-green-500/10 border border-green-500/20 rounded">
+              {success}
+            </div>
+          )}
+
           {error && (
-            <div className="text-incorrect text-sm">{error}</div>
+            <div className="text-red-400 text-sm text-center p-3 bg-red-500/10 border border-red-500/20 rounded">
+              {error}
+            </div>
           )}
 
           <button
