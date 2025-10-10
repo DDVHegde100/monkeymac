@@ -64,7 +64,7 @@ export default function HomePage() {
             Welcome back, {user.firstName}! 👋
           </h1>
           <p className="text-sub">
-            Here's your personalized mental math training dashboard
+            Here&apos;s your personalized mental math training dashboard
           </p>
         </div>
         

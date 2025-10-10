@@ -178,7 +178,7 @@ export default function SmartDashboard() {
         {/* Quote */}
         <div className="bg-bg rounded-lg p-4 border border-sub mb-4">
           <blockquote className="text-text italic text-center">
-            "{data.motivation.quote}"
+            &ldquo;{data.motivation.quote}&rdquo;
           </blockquote>
         </div>
 
