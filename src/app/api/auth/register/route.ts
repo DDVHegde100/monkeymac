@@ -66,8 +66,14 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('Registration error:', error)
+    console.error('MongoDB URI available:', !!process.env.MONGODB_URI)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      },
       { status: 500 }
     )
   }
