@@ -187,7 +187,15 @@ const THEMES: Theme[] = [
   { id: 'quantum-flux', name: 'Quantum Flux', colors: { primary: '#0f0f1f', secondary: '#1f1f3f', accent: '#8080ff', correct: '#80ff80', incorrect: '#ff8080', textPrimary: '#e0e0ff', textSecondary: '#c0c0ff' }},
   { id: 'solar-flare', name: 'Solar Flare', colors: { primary: '#331100', secondary: '#662200', accent: '#ffaa00', correct: '#88cc44', incorrect: '#cc4444', textPrimary: '#ffdd88', textSecondary: '#ffbb44' }},
   { id: 'mystic-forest', name: 'Mystic Forest', colors: { primary: '#0d2818', secondary: '#1a4030', accent: '#66cc66', correct: '#99dd99', incorrect: '#cc6666', textPrimary: '#ccffcc', textSecondary: '#99dd99' }},
-  { id: 'galactic-core', name: 'Galactic Core', colors: { primary: '#1a0066', secondary: '#3300cc', accent: '#cc66ff', correct: '#66ffcc', incorrect: '#ff6699', textPrimary: '#f0e6ff', textSecondary: '#d4b3ff' }}
+  { id: 'galactic-core', name: 'Galactic Core', colors: { primary: '#1a0066', secondary: '#3300cc', accent: '#cc66ff', correct: '#66ffcc', incorrect: '#ff6699', textPrimary: '#f0e6ff', textSecondary: '#d4b3ff' }},
+  
+  // New Gradient Themes
+  { id: 'sunset-horizon', name: 'Sunset Horizon', colors: { primary: '#1a0d26', secondary: '#331a4d', accent: '#ff6b35', correct: '#4ecdc4', incorrect: '#f38ba8', textPrimary: '#ffe66d', textSecondary: '#ffb700' }},
+  { id: 'ocean-depth', name: 'Ocean Depth', colors: { primary: '#0f1419', secondary: '#1e2832', accent: '#00d4aa', correct: '#7dd3fc', incorrect: '#f87171', textPrimary: '#a5f3fc', textSecondary: '#67e8f9' }},
+  { id: 'aurora-gradient', name: 'Aurora Gradient', colors: { primary: '#0c0a1e', secondary: '#1a1535', accent: '#a855f7', correct: '#34d399', incorrect: '#fb7185', textPrimary: '#c4b5fd', textSecondary: '#8b5cf6' }},
+  { id: 'fire-ice', name: 'Fire & Ice', colors: { primary: '#0d1b2a', secondary: '#1b263b', accent: '#e63946', correct: '#06ffa5', incorrect: '#f72585', textPrimary: '#f1faee', textSecondary: '#a8dadc' }},
+  { id: 'cosmic-nebula', name: 'Cosmic Nebula', colors: { primary: '#1e0a3c', secondary: '#3d1a78', accent: '#ff006e', correct: '#8338ec', incorrect: '#fb5607', textPrimary: '#f72585', textSecondary: '#c77dff' }},
+  { id: 'tropical-paradise', name: 'Tropical Paradise', colors: { primary: '#0f2027', secondary: '#203a43', accent: '#2c5530', correct: '#4ecdc4', incorrect: '#ff6b6b', textPrimary: '#a8e6cf', textSecondary: '#7fcdcd' }}
 ]
 
 const FONTS: Font[] = [

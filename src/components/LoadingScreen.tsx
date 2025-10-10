@@ -1,10 +1,35 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
 interface LoadingScreenProps {
   message?: string
+  onLoadingComplete?: () => void
+  minLoadingTime?: number
 }
 
-export default function LoadingScreen({ message = 'Loading...' }: LoadingScreenProps) {
+export default function LoadingScreen({ 
+  message = 'Loading...', 
+  onLoadingComplete,
+  minLoadingTime = 2000 
+}: LoadingScreenProps) {
+  const [isVisible, setIsVisible] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false)
+      if (onLoadingComplete) {
+        onLoadingComplete()
+      }
+    }, minLoadingTime)
+
+    return () => clearTimeout(timer)
+  }, [onLoadingComplete, minLoadingTime])
+
+  if (!isVisible && onLoadingComplete) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-bg-primary text-text-primary flex items-center justify-center">
       <div className="text-center">
