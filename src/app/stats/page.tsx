@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface UserStats {
@@ -40,11 +40,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<UserStats | null>(null)
 
-  useEffect(() => {
-    checkAuthAndLoadStats()
-  }, [])
-
-  const checkAuthAndLoadStats = async () => {
+  const checkAuthAndLoadStats = useCallback(async () => {
     try {
       // Check authentication
       const authResponse = await fetch('/api/auth/me')
@@ -67,7 +63,11 @@ export default function StatsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    checkAuthAndLoadStats()
+  }, [checkAuthAndLoadStats])
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -558,7 +558,7 @@ export default function StatsPage() {
               <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700">
                 <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
                   <span className="mr-3">📈</span>
-                  This Week's Progress
+                  This Week&apos;s Progress
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <StatCard 
