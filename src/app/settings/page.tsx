@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import '../../../styles/enhanced-settings.css'
+import '../../styles/enhanced-settings.css'
 
 interface Theme {
   id: string
