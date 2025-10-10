@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
+import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '../../../../lib/mongodb'
 
 export async function POST(request: NextRequest) {
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Save test result
     const testResult = await testResults.insertOne({
-      userId: decoded.userId,
+      userId: new ObjectId(decoded.userId),
       score,
       totalProblems,
       correctAnswers,
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Update user stats
-    const user = await users.findOne({ _id: decoded.userId })
+    const user = await users.findOne({ _id: new ObjectId(decoded.userId) })
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
     const newAveragePPM = newTotalTimeSpent > 0 ? Math.round((newTotalProblems / (newTotalTimeSpent / 60))) : 0
 
     // Calculate overall accuracy
-    const allUserTests = await testResults.find({ userId: decoded.userId }).toArray()
+    const allUserTests = await testResults.find({ userId: new ObjectId(decoded.userId) }).toArray()
     const totalCorrectAll = allUserTests.reduce((sum, test) => sum + (test.correctAnswers || 0), 0) + correctAnswers
     const totalProblemsAll = allUserTests.reduce((sum, test) => sum + (test.totalProblems || 0), 0) + totalProblems
     const newAccuracy = totalProblemsAll > 0 ? (totalCorrectAll / totalProblemsAll) * 100 : 0
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
       updateDoc.$set[recordKey] = newRecord
     }
     
-    await users.updateOne({ _id: decoded.userId }, updateDoc)
+    await users.updateOne({ _id: new ObjectId(decoded.userId) }, updateDoc)
 
     return NextResponse.json({ 
       message: 'Test result saved successfully',

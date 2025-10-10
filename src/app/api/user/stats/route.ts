@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
+import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '../../../../lib/mongodb'
 
 export async function GET(request: NextRequest) {
@@ -17,13 +18,13 @@ export async function GET(request: NextRequest) {
     const tests = db.collection('test_results')
 
     // Get user data
-    const user = await users.findOne({ _id: decoded.userId })
+    const user = await users.findOne({ _id: new ObjectId(decoded.userId) })
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     // Get all test results for this user
-    const userTests = await tests.find({ userId: decoded.userId }).sort({ createdAt: -1 }).toArray()
+    const userTests = await tests.find({ userId: new ObjectId(decoded.userId) }).sort({ createdAt: -1 }).toArray()
 
     // Calculate comprehensive stats
     const totalTests = userTests.length
