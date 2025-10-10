@@ -1,4 +1,5 @@
 {
   "version": 2,
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "alias": ["monkeymac.vercel.app"]
 }
