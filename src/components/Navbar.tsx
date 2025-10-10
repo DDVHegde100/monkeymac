@@ -30,6 +30,14 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
                 Test
               </Link>
               <Link 
+                href="/leaderboards" 
+                className={`hover:text-accent transition-colors ${
+                  pathname === '/leaderboards' ? 'text-accent' : 'text-text-primary'
+                }`}
+              >
+                Leaderboards
+              </Link>
+              <Link 
                 href="/settings" 
                 className={`hover:text-accent transition-colors ${
                   pathname === '/settings' ? 'text-accent' : 'text-text-primary'
