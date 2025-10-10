@@ -7,11 +7,15 @@ export async function POST(request: NextRequest) {
     const token = request.cookies.get('token')?.value
 
     if (!token) {
+      console.log('No authentication token found')
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     const testData = await request.json()
+    
+    console.log('Saving test result for user:', decoded.userId)
+    console.log('Test data:', testData)
 
     const { db } = await connectToDatabase()
     const testResults = db.collection('test_results')
@@ -24,6 +28,7 @@ export async function POST(request: NextRequest) {
       correctAnswers,
       incorrectAnswers,
       duration,
+      testDuration,
       difficulty,
       operations,
       problems,
@@ -93,23 +98,36 @@ export async function POST(request: NextRequest) {
     const totalProblemsAll = allUserTests.reduce((sum, test) => sum + (test.totalProblems || 0), 0) + totalProblems
     const newAccuracy = totalProblemsAll > 0 ? (totalCorrectAll / totalProblemsAll) * 100 : 0
 
-    // Update user stats
-    await users.updateOne(
-      { _id: decoded.userId },
-      {
-        $set: {
-          'stats.totalTests': newTotalTests,
-          'stats.bestScore': Math.round(newBestScore),
-          'stats.averageScore': Math.round(newAverageScore),
-          'stats.totalProblems': newTotalProblems,
-          'stats.accuracy': Math.round(newAccuracy * 100) / 100,
-          'stats.totalTimeSpent': newTotalTimeSpent,
-          'stats.testsRestarted': newTestsRestarted,
-          'stats.averagePPM': newAveragePPM,
-          updatedAt: new Date()
-        }
+    // Calculate records by duration and difficulty
+    const durationKey = `${testDuration || duration}s`
+    const difficultyKey = difficulty
+    const recordKey = `records.${durationKey}.${difficultyKey}`
+    
+    // Get current record for this duration/difficulty combination
+    const currentRecord = user.records?.[durationKey]?.[difficultyKey] || 0
+    const newRecord = Math.max(currentRecord, score)
+    
+    // Update user stats and records
+    const updateDoc: any = {
+      $set: {
+        'stats.totalTests': newTotalTests,
+        'stats.bestScore': Math.round(newBestScore),
+        'stats.averageScore': Math.round(newAverageScore),
+        'stats.totalProblems': newTotalProblems,
+        'stats.accuracy': Math.round(newAccuracy * 100) / 100,
+        'stats.totalTimeSpent': newTotalTimeSpent,
+        'stats.testsRestarted': newTestsRestarted,
+        'stats.averagePPM': newAveragePPM,
+        updatedAt: new Date()
       }
-    )
+    }
+    
+    // Set the record if it's a new best
+    if (score > currentRecord) {
+      updateDoc.$set[recordKey] = newRecord
+    }
+    
+    await users.updateOne({ _id: decoded.userId }, updateDoc)
 
     return NextResponse.json({ 
       message: 'Test result saved successfully',

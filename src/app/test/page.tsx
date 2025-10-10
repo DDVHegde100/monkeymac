@@ -523,6 +523,7 @@ export default function MathTest() {
           correctAnswers,
           incorrectAnswers: totalProblems - correctAnswers,
           duration,
+          testDuration: settings.duration, // Original test duration setting
           difficulty: settings.difficulty,
           operations: settings.operations,
           problems,
@@ -532,13 +533,20 @@ export default function MathTest() {
           isRestart: restartCount > 0
         }
 
-        await fetch('/api/test/save-result', {
+        const response = await fetch('/api/test/save-result', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(testData),
         })
+        
+        if (response.ok) {
+          const result = await response.json()
+          console.log('Test result saved successfully:', result)
+        } else {
+          console.error('Failed to save test result:', await response.text())
+        }
       } catch (error) {
         console.error('Failed to save test result:', error)
       }

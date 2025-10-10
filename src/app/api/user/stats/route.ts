@@ -62,6 +62,9 @@ export async function GET(request: NextRequest) {
       date: test.createdAt || new Date().toISOString()
     }))
 
+    // Get records data
+    const records = user.records || {}
+    
     const stats = {
       totalTests,
       bestScore: Math.round(bestScore),
@@ -74,7 +77,8 @@ export async function GET(request: NextRequest) {
       currentStreak,
       longestStreak,
       favoriteOperation,
-      recentTests
+      recentTests,
+      records
     }
 
     return NextResponse.json({ stats })
