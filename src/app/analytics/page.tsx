@@ -423,7 +423,7 @@ export default function AnalyticsPage() {
                 <div className="text-4xl mb-4">🎉</div>
                 <h3 className="text-xl font-bold text-text-primary mb-2">Excellent Performance!</h3>
                 <p className="text-text-secondary">
-                  You're performing well across all areas. Keep up the great work!
+                  You&apos;re performing well across all areas. Keep up the great work!
                 </p>
               </div>
             )}
