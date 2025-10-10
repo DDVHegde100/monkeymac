@@ -477,7 +477,15 @@ export default function StatsPage() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-text-primary mb-2">Your Statistics</h1>
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-4xl font-bold text-text-primary">Your Statistics</h1>
+              <button
+                onClick={() => router.push('/history')}
+                className="btn-secondary px-6 py-3"
+              >
+                View History
+              </button>
+            </div>
             <p className="text-text-secondary">Track your mental math progress and achievements</p>
           </div>
 
