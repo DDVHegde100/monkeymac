@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import PhoneVerification from '../../components/PhoneVerification'
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('')
@@ -13,9 +12,21 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showPhoneVerification, setShowPhoneVerification] = useState(false)
-  const [verifiedPhone, setVerifiedPhone] = useState('')
   const router = useRouter()
+
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, '')
+    
+    // Format as (XXX) XXX-XXXX
+    if (digits.length <= 3) {
+      return digits
+    } else if (digits.length <= 6) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+    } else {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,15 +45,14 @@ export default function RegisterPage() {
       return
     }
 
-    // Show phone verification modal
-    setShowPhoneVerification(true)
-    setLoading(false)
-  }
-
-  const handlePhoneVerified = async (phoneNumber: string) => {
-    setVerifiedPhone(phoneNumber)
-    setShowPhoneVerification(false)
-    setLoading(true)
+    // Extract digits only from phone number
+    const cleanPhone = phone.replace(/\D/g, '')
+    
+    if (cleanPhone.length !== 10) {
+      setError('Please enter a valid 10-digit phone number')
+      setLoading(false)
+      return
+    }
 
     try {
       const response = await fetch('/api/auth/register', {
@@ -53,7 +63,7 @@ export default function RegisterPage() {
         body: JSON.stringify({ 
           firstName, 
           username, 
-          phone: phoneNumber, 
+          phone: cleanPhone, 
           password 
         }),
       })
@@ -114,9 +124,10 @@ export default function RegisterPage() {
               type="tel"
               id="phone"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
               className="w-full px-3 py-2 bg-bg-secondary border border-gray-600 rounded-md text-text-primary focus:outline-none focus:border-accent"
-              placeholder="e.g. +1234567890"
+              placeholder="(555) 123-4567"
+              maxLength={14}
               required
             />
           </div>
@@ -169,14 +180,6 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
-
-      {/* Phone Verification Modal */}
-      {showPhoneVerification && (
-        <PhoneVerification
-          onVerified={handlePhoneVerified}
-          onCancel={() => setShowPhoneVerification(false)}
-        />
-      )}
     </div>
   )
 }
