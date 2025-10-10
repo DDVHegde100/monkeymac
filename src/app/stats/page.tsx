@@ -402,16 +402,13 @@ export default function StatsPage() {
     )
   }
 
-  const StatCard = ({ title, value, subtitle, icon }: { title: string, value: string | number, subtitle?: string, icon: string }) => (
-    <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700 hover:border-accent/30 transition-colors">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-2xl">{icon}</div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-accent">{value}</div>
-          {subtitle && <div className="text-xs text-text-secondary opacity-75">{subtitle}</div>}
-        </div>
+  const StatCard = ({ title, value, subtitle }: { title: string, value: string | number, subtitle?: string }) => (
+    <div className="bg-bg-secondary rounded-lg p-4 border border-gray-700 hover:border-accent/30 transition-colors">
+      <div className="text-right mb-2">
+        <div className="text-xl font-bold text-accent">{value}</div>
+        {subtitle && <div className="text-xs text-text-secondary opacity-75">{subtitle}</div>}
       </div>
-      <div className="text-text-primary font-medium">{title}</div>
+      <div className="text-text-primary font-medium text-sm">{title}</div>
     </div>
   )
 
@@ -419,7 +416,6 @@ export default function StatsPage() {
     return (
       <div className="test-container flex items-center justify-center min-h-screen bg-bg-primary">
         <div className="flex flex-col items-center space-y-6">
-          <div className="text-4xl animate-bounce">📊</div>
           <div className="text-xl text-accent">Loading your stats...</div>
           <div className="flex space-x-2">
             <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
@@ -486,96 +482,82 @@ export default function StatsPage() {
           </div>
 
           {stats ? (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Core Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard 
                   title="Average PPM" 
                   value={stats.averagePPM || 0} 
                   subtitle="problems per minute"
-                  icon="⚡"
                 />
                 <StatCard 
                   title="Tests Taken" 
                   value={stats.totalTests} 
-                  icon="🎯"
                 />
                 <StatCard 
                   title="Tests Restarted" 
                   value={stats.testsRestarted || 0} 
-                  icon="🔄"
                 />
               </div>
 
               {/* Overview Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard 
                   title="Best Score" 
                   value={stats.bestScore} 
                   subtitle="problems/min"
-                  icon="🏆"
                 />
                 <StatCard 
                   title="Average Accuracy" 
                   value={`${stats.accuracy.toFixed(1)}%`} 
-                  icon="✅"
                 />
                 <StatCard 
                   title="Total Problems" 
                   value={stats.totalProblems.toLocaleString()} 
-                  icon="📝"
                 />
                 <StatCard 
                   title="Time Spent Training" 
                   value={formatTime(stats.totalTimeSpent || 0)} 
-                  icon="⏱️"
                 />
               </div>
 
               {/* Performance Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard 
                   title="Average Score" 
                   value={Math.round(stats.averageScore)} 
                   subtitle="problems per minute"
-                  icon="📊"
                 />
                 <StatCard 
                   title="Current Streak" 
                   value={stats.currentStreak || 0} 
                   subtitle="days"
-                  icon="🔥"
                 />
                 <StatCard 
                   title="Completion Rate" 
                   value={stats.totalTests > 0 ? `${Math.round(((stats.totalTests - (stats.testsRestarted || 0)) / stats.totalTests) * 100)}%` : '0%'} 
                   subtitle="tests finished"
-                  icon="✅"
                 />
               </div>
 
               {/* Weekly Progress */}
               <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700">
-                <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
-                  <span className="mr-3">📈</span>
+                <h2 className="text-2xl font-bold text-text-primary mb-4">
                   This Week&apos;s Progress
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <StatCard 
                     title="Tests This Week" 
                     value={stats.testsThisWeek || 0} 
-                    icon="📊"
                   />
                   <StatCard 
                     title="Longest Streak" 
                     value={stats.longestStreak || 0} 
                     subtitle="days"
-                    icon="🌟"
                   />
                   <StatCard 
                     title="Favorite Operation" 
                     value={stats.favoriteOperation || 'Addition'} 
-                    icon="➕"
                   />
                 </div>
               </div>
