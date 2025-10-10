@@ -484,13 +484,19 @@ export default function StatsPage() {
                   onClick={() => router.push('/analytics')}
                   className="btn-primary px-6 py-3"
                 >
-                  View Analytics
+                  Analytics
+                </button>
+                <button
+                  onClick={() => router.push('/search')}
+                  className="btn-secondary px-6 py-3"
+                >
+                  Search
                 </button>
                 <button
                   onClick={() => router.push('/history')}
                   className="btn-secondary px-6 py-3"
                 >
-                  View History
+                  History
                 </button>
               </div>
             </div>
