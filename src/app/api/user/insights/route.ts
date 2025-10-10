@@ -20,6 +20,12 @@ interface Recommendation {
   priority: string
 }
 
+interface WeakAreas {
+  difficulty: string | null
+  accuracy: number
+  operation: string | null
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('token')?.value
@@ -234,7 +240,7 @@ async function getSmartRecommendations(userTests: any[], db: any, userId: string
       title: `Improve ${weakAreas.operation} Skills`,
       description: `Your ${weakAreas.operation} accuracy is ${weakAreas.accuracy?.toFixed(1) || 0}%. Practice makes perfect!`,
       action: 'Practice Now',
-      url: '/test?focus=' + (weakAreas.operation?.toLowerCase() || ''),
+      url: '/test?focus=' + (weakAreas.operation ? weakAreas.operation.toLowerCase() : ''),
       priority: 'high'
     })
   }
@@ -245,7 +251,7 @@ async function getSmartRecommendations(userTests: any[], db: any, userId: string
       title: `Challenge Yourself with ${weakAreas.difficulty}`,
       description: `You've shown great progress. Time to level up!`,
       action: 'Try ' + weakAreas.difficulty,
-      url: '/test?difficulty=' + (weakAreas.difficulty?.toLowerCase() || ''),
+      url: '/test?difficulty=' + (weakAreas.difficulty ? weakAreas.difficulty.toLowerCase() : ''),
       priority: 'medium'
     })
   }
@@ -329,10 +335,10 @@ function calculateDailyStreak(tests: any[]) {
 
 function analyzeTimePatterns(tests: any[]) {
   const timeGroups = {
-    'in the morning': { tests: [], scores: [] },
-    'in the afternoon': { tests: [], scores: [] },
-    'in the evening': { tests: [], scores: [] },
-    'at night': { tests: [], scores: [] }
+    'in the morning': { tests: [] as any[], scores: [] as number[] },
+    'in the afternoon': { tests: [] as any[], scores: [] as number[] },
+    'in the evening': { tests: [] as any[], scores: [] as number[] },
+    'at night': { tests: [] as any[], scores: [] as number[] }
   }
   
   tests.forEach(test => {
@@ -354,7 +360,7 @@ function analyzeTimePatterns(tests: any[]) {
     }
   })
   
-  let bestTimeOfDay = null
+  let bestTimeOfDay: string | null = null
   let bestScore = 0
   
   Object.entries(timeGroups).forEach(([time, data]) => {
@@ -403,7 +409,7 @@ function analyzeDifficultyProgression(tests: any[]) {
   return { readyForNext: false }
 }
 
-function analyzeWeakAreas(tests: any[]) {
+function analyzeWeakAreas(tests: any[]): WeakAreas {
   // This would analyze operation-specific performance if we tracked it
   // For now, return difficulty-based analysis
   const difficulties = ['easy', 'medium', 'hard', 'abstract']
@@ -418,7 +424,7 @@ function analyzeWeakAreas(tests: any[]) {
     diffStats[diff].accuracy += test.accuracy || 0
   })
   
-  let weakestDifficulty = null
+  let weakestDifficulty: string | null = null
   let lowestAccuracy = 100
   
   Object.entries(diffStats).forEach(([diff, stats]: [string, any]) => {
