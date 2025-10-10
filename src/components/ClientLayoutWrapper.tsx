@@ -1,13 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
-import { loadTheme } from '../utils/theme'
+import { ThemeProvider } from '../contexts/ThemeContext'
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    // Load theme immediately when the app loads
-    loadTheme()
-  }, [])
-
-  return <>{children}</>
+  return (
+    <ThemeProvider>
+      {children}
+    </ThemeProvider>
+  )
 }
