@@ -79,6 +79,7 @@ export default function MathTest() {
   const [abstractModeTimer, setAbstractModeTimer] = useState<number | null>(null)
   const [userPreferences, setUserPreferences] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [restartCount, setRestartCount] = useState(0)
   
   const inputRef = useRef<HTMLInputElement>(null)
   const testStartTimeRef = useRef(0)
@@ -301,8 +302,11 @@ export default function MathTest() {
     if (settings.difficulty === 'abstract' && settings.abstractTimeLimit) {
       setAbstractModeTimer(settings.abstractTimeLimit)
     }
-    
-    setTimeout(() => inputRef.current?.focus(), 100)
+  }
+
+  const restartTest = () => {
+    setRestartCount(prev => prev + 1)
+    startTest()
   }
 
   useEffect(() => {
@@ -471,10 +475,49 @@ export default function MathTest() {
     }
   }
 
-  const finishTest = () => {
+  const finishTest = async () => {
     if (currentProblem && userInput.trim()) {
       submitAnswer()
     }
+    
+    // Calculate test results
+    const correctAnswers = problems.filter(p => p.isCorrect === true).length
+    const totalProblems = problems.length
+    const accuracy = totalProblems > 0 ? (correctAnswers / totalProblems) * 100 : 0
+    const duration = settings.duration - timeLeft
+    const averagePPM = duration > 0 ? Math.round((totalProblems / (duration / 60))) : 0
+    const score = averagePPM // PPM as score
+
+    // Save test results if user is authenticated
+    if (isAuthenticated) {
+      try {
+        const testData = {
+          score,
+          totalProblems,
+          correctAnswers,
+          incorrectAnswers: totalProblems - correctAnswers,
+          duration,
+          difficulty: settings.difficulty,
+          operations: settings.operations,
+          problems,
+          averagePPM,
+          accuracy,
+          testType: 'standard',
+          isRestart: restartCount > 0
+        }
+
+        await fetch('/api/test/save-result', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData),
+        })
+      } catch (error) {
+        console.error('Failed to save test result:', error)
+      }
+    }
+    
     setTestState('finished')
   }
 
@@ -857,15 +900,25 @@ export default function MathTest() {
               />
             </div>
             
-            {!settings.autoAdvance && (
+            <div className="flex gap-4 mt-6">
+              {!settings.autoAdvance && (
+                <button
+                  onClick={submitAnswer}
+                  className="btn-primary px-8 py-3"
+                  disabled={!userInput.trim()}
+                >
+                  Submit Answer
+                </button>
+              )}
               <button
-                onClick={submitAnswer}
-                className="btn-primary mt-6 px-8 py-3"
-                disabled={!userInput.trim()}
+                onClick={restartTest}
+                className="btn-secondary px-6 py-3 flex items-center gap-2"
+                title="Restart test (counts as restart in stats)"
               >
-                Submit Answer
+                <span>🔄</span>
+                Restart
               </button>
-            )}
+            </div>
           </div>
         )}
 
