@@ -45,8 +45,26 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg text-text flex items-center justify-center">
-        <div className="text-xl text-sub">Loading...</div>
+      <div className="min-h-screen bg-bg-primary text-text-primary flex items-center justify-center">
+        <div className="text-center">
+          {/* Animated Logo */}
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl overflow-hidden bg-accent/10 border border-accent/20 animate-pulse">
+            <img 
+              src="/monk.png" 
+              alt="MonkeyMac Logo" 
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
+          
+          {/* Loading Text */}
+          <h1 className="text-2xl font-bold text-accent mb-2">MonkeyMac</h1>
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="w-2 h-2 bg-accent rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-accent rounded-full animate-bounce [animation-delay:150ms]"></div>
+            <div className="w-2 h-2 bg-accent rounded-full animate-bounce [animation-delay:300ms]"></div>
+          </div>
+          <p className="text-text-secondary">Preparing your dashboard...</p>
+        </div>
       </div>
     )
   }
