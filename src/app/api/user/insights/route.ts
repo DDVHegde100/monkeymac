@@ -310,7 +310,8 @@ async function getSmartRecommendations(userTests: any[], db: any, userId: string
 // Helper functions
 function calculateDailyStreak(tests: any[]) {
   const dates = tests.map(t => new Date(t.createdAt).toDateString())
-  const uniqueDates = [...new Set(dates)].sort()
+  const uniqueDatesSet = new Set(dates)
+  const uniqueDates = Array.from(uniqueDatesSet).sort()
   
   let streak = 1
   const today = new Date().toDateString()
