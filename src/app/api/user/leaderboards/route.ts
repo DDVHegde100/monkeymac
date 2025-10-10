@@ -403,19 +403,19 @@ async function getUserRankings(db: any, userId: string, category: string, timefr
     }
 
     rankings.averageScore = {
-      value: scores.reduce((a, b) => a + b, 0) / scores.length,
+      value: scores.reduce((a: number, b: number) => a + b, 0) / scores.length,
       rank: null,
       outOf: null
     }
 
     rankings.accuracy = {
-      value: accuracies.reduce((a, b) => a + b, 0) / accuracies.length,
+      value: accuracies.reduce((a: number, b: number) => a + b, 0) / accuracies.length,
       rank: null,
       outOf: null
     }
 
     rankings.speed = {
-      value: ppms.reduce((a, b) => a + b, 0) / ppms.length,
+      value: ppms.reduce((a: number, b: number) => a + b, 0) / ppms.length,
       rank: null,
       outOf: null
     }
