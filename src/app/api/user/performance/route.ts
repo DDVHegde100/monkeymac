@@ -208,7 +208,7 @@ async function getInteractionMetrics(db: any, userId: ObjectId) {
     .limit(100)
     .toArray()
 
-  const interactionTypes = {}
+  const interactionTypes: Record<string, number> = {}
   const hourlyActivity = Array(24).fill(0)
   
   interactions.forEach((interaction: any) => {
