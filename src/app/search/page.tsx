@@ -79,6 +79,7 @@ export default function SearchPage() {
 
   const performSearch = useCallback(async () => {
     try {
+      setLoading(true)
       const params = new URLSearchParams({
         query: debouncedQuery,
         ...filters,
@@ -87,11 +88,13 @@ export default function SearchPage() {
       })
 
       // Remove empty filters
-      Object.keys(params).forEach(key => {
-        if (!params.get(key) || params.get(key) === 'all') {
-          params.delete(key)
+      const keysToDelete: string[] = []
+      params.forEach((value, key) => {
+        if (!value || value === 'all' || value === '') {
+          keysToDelete.push(key)
         }
       })
+      keysToDelete.forEach(key => params.delete(key))
 
       const response = await fetch(`/api/user/search?${params}`)
       if (response.ok) {
@@ -99,6 +102,8 @@ export default function SearchPage() {
         setSearchData(data)
       } else if (response.status === 401) {
         router.push('/test')
+      } else {
+        console.error('Search request failed:', response.status, await response.text())
       }
     } catch (error) {
       console.error('Search failed:', error)
