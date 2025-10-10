@@ -16,6 +16,7 @@ interface UserStats {
   longestStreak: number
   favoriteOperation: string
   testsRestarted: number
+  records: Record<string, Record<string, number>>
   recentTests: Array<{
     id: string
     score: number
@@ -323,6 +324,84 @@ export default function StatsPage() {
     )
   }
 
+  const RecordsTable = ({ records }: { records: Record<string, Record<string, number>> }) => {
+    const durations = ['15s', '30s', '60s', '120s']
+    const difficulties = ['easy', 'medium', 'hard', 'abstract']
+    
+    const getDurationLabel = (duration: string) => {
+      switch (duration) {
+        case '15s': return '15 sec'
+        case '30s': return '30 sec' 
+        case '60s': return '1 min'
+        case '120s': return '2 min'
+        default: return duration
+      }
+    }
+
+    const getDifficultyIcon = (difficulty: string) => {
+      switch (difficulty) {
+        case 'easy': return '🟢'
+        case 'medium': return '🟡' 
+        case 'hard': return '🔴'
+        case 'abstract': return '🟣'
+        default: return '⚪'
+      }
+    }
+
+    return (
+      <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700">
+        <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center">
+          <span className="mr-3">🏆</span>
+          Personal Records
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-600">
+                <th className="text-left py-3 text-text-secondary font-medium">Duration</th>
+                {difficulties.map(diff => (
+                  <th key={diff} className="text-center py-3 text-text-secondary font-medium">
+                    <div className="flex flex-col items-center">
+                      <span>{getDifficultyIcon(diff)}</span>
+                      <span className="text-xs capitalize">{diff}</span>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {durations.map(duration => (
+                <tr key={duration} className="border-b border-gray-700/50 hover:bg-bg-primary/20">
+                  <td className="py-4 font-medium text-text-primary">
+                    {getDurationLabel(duration)}
+                  </td>
+                  {difficulties.map(difficulty => {
+                    const record = records[duration]?.[difficulty] || 0
+                    return (
+                      <td key={difficulty} className="py-4 text-center">
+                        {record > 0 ? (
+                          <div className="flex flex-col items-center">
+                            <span className="text-lg font-bold text-accent">{record}</span>
+                            <span className="text-xs text-text-secondary">PPM</span>
+                          </div>
+                        ) : (
+                          <span className="text-text-secondary opacity-50">—</span>
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 text-center text-xs text-text-secondary opacity-75">
+          Your best Problems Per Minute (PPM) for each time duration and difficulty combination
+        </div>
+      </div>
+    )
+  }
+
   const StatCard = ({ title, value, subtitle, icon }: { title: string, value: string | number, subtitle?: string, icon: string }) => (
     <div className="bg-bg-secondary rounded-lg p-6 border border-gray-700 hover:border-accent/30 transition-colors">
       <div className="flex items-center justify-between mb-2">
@@ -500,6 +579,9 @@ export default function StatsPage() {
                   />
                 </div>
               </div>
+
+              {/* Personal Records */}
+              <RecordsTable records={stats.records || {}} />
 
               {/* Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
