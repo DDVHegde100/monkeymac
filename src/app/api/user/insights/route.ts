@@ -379,7 +379,7 @@ function analyzeTimePatterns(tests: any[]) {
 
 function analyzeDifficultyProgression(tests: any[]) {
   const difficultyOrder = ['easy', 'medium', 'hard', 'abstract']
-  const difficultyStats = {}
+  const difficultyStats: Record<string, { tests: number; totalAccuracy: number }> = {}
   
   tests.forEach(test => {
     const diff = test.difficulty || 'easy'
@@ -414,7 +414,7 @@ function analyzeWeakAreas(tests: any[]): WeakAreas {
   // This would analyze operation-specific performance if we tracked it
   // For now, return difficulty-based analysis
   const difficulties = ['easy', 'medium', 'hard', 'abstract']
-  const diffStats = {}
+  const diffStats: Record<string, { total: number; accuracy: number }> = {}
   
   tests.forEach(test => {
     const diff = test.difficulty || 'easy'
