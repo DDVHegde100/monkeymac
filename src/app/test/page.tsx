@@ -2,27 +2,24 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { THEMES, applyTheme, loadTheme } from '../../utils/theme'
-
-const FONTS = [
-  { id: 'jetbrains', name: 'JetBrains Mono', family: 'JetBrains Mono, monospace' },
-  { id: 'fira', name: 'Fira Code', family: 'Fira Code, monospace' },
-  { id: 'source', name: 'Source Code Pro', family: 'Source Code Pro, monospace' },
-  { id: 'roboto', name: 'Roboto Mono', family: 'Roboto Mono, monospace' },
-  { id: 'inter', name: 'Inter', family: 'Inter, sans-serif' },
-  { id: 'arial', name: 'Arial', family: 'Arial, sans-serif' },
-]
+import { FONTS } from '../../config/fonts'
+import { usePreferences } from '../../contexts/ThemeContext'
+import type { ProblemLayout } from '../../config/types'
+import { GAME_MODE_SECTIONS, getModeDisplayName } from '../../config/gameModes'
+import {
+  type Difficulty,
+  type Operation,
+  DIFFICULTY_PRESETS,
+  generateProblem as createProblem,
+  getDifficultyPreset,
+} from '../../lib/problemGenerator'
 
 interface TestSettings {
   duration: number
-  difficulty: 'easy' | 'medium' | 'hard' | 'abstract'
-  operations: ('addition' | 'subtraction' | 'multiplication' | 'division')[]
-  ranges: {
-    addition: { min: number, max: number }
-    subtraction: { min: number, max: number }
-    multiplication: { min: number, max: number }
-    division: { min: number, max: number }
-  }
+  difficulty: Difficulty
+  operations: Operation[]
+  ranges: ReturnType<typeof getDifficultyPreset>['ranges']
+  divisionStyle: 'reverse-multiply' | 'quotient-first'
   autoAdvance: boolean
   abstractTimeLimit?: number
 }
@@ -40,20 +37,17 @@ interface Problem {
 }
 
 const DEFAULT_SETTINGS: TestSettings = {
-  duration: 120,
+  duration: DIFFICULTY_PRESETS.medium.defaultDuration,
   difficulty: 'medium',
   operations: ['addition', 'subtraction', 'multiplication', 'division'],
-  ranges: {
-    addition: { min: 1, max: 99 },
-    subtraction: { min: 1, max: 99 },
-    multiplication: { min: 1, max: 12 },
-    division: { min: 1, max: 144 }
-  },
-  autoAdvance: true
+  ranges: getDifficultyPreset('medium').ranges,
+  divisionStyle: getDifficultyPreset('medium').divisionStyle,
+  autoAdvance: true,
 }
 
 export default function MathTest() {
   const router = useRouter()
+  const { preferences, setPreferences } = usePreferences()
   const [user, setUser] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -68,10 +62,11 @@ export default function MathTest() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   const [abstractModeTimer, setAbstractModeTimer] = useState<number | null>(null)
-  const [userPreferences, setUserPreferences] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [restartCount, setRestartCount] = useState(0)
   const [tabPressed, setTabPressed] = useState(false)
+  const [showAppearance, setShowAppearance] = useState(false)
+  const [inputFlash, setInputFlash] = useState<'correct' | 'incorrect' | null>(null)
   
   const inputRef = useRef<HTMLInputElement>(null)
   const testStartTimeRef = useRef(0)
@@ -154,33 +149,6 @@ export default function MathTest() {
     return () => document.removeEventListener('keydown', handleGlobalKeyPress)
   }, [testState]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load user preferences
-  useEffect(() => {
-    const loadPreferences = async () => {
-      if (isAuthenticated) {
-        try {
-          const response = await fetch('/api/user/preferences')
-          if (response.ok) {
-            const data = await response.json()
-            setUserPreferences(data.preferences)
-            // Theme is handled globally now, just handle fonts here
-            applyFont(data.preferences?.font || 'JetBrains Mono')
-          }
-        } catch (error) {
-          console.error('Failed to load preferences:', error)
-        }
-      } else {
-        // Load font from localStorage for guests (theme handled globally)
-        const savedFont = localStorage.getItem('selectedFont') || 'JetBrains Mono'
-        applyFont(savedFont)
-      }
-    }
-    
-    if (loading === false) {
-      loadPreferences()
-    }
-  }, [isAuthenticated, loading])
-
   const checkAuthStatus = async () => {
     try {
       const response = await fetch('/api/auth/me')
@@ -196,107 +164,41 @@ export default function MathTest() {
     }
   }
 
-  const getDifficultyRanges = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy':
-        return {
-          addition: { min: 1, max: 20 },
-          subtraction: { min: 1, max: 20 },
-          multiplication: { min: 1, max: 5 },
-          division: { min: 1, max: 25 }
-        }
-      case 'hard':
-        return {
-          addition: { min: 10, max: 999 },
-          subtraction: { min: 10, max: 999 },
-          multiplication: { min: 1, max: 25 },
-          division: { min: 1, max: 625 }
-        }
-      case 'abstract':
-        return {
-          addition: { min: 50, max: 9999 },
-          subtraction: { min: 50, max: 9999 },
-          multiplication: { min: 10, max: 99 },
-          division: { min: 1, max: 9801 }
-        }
-      default: // medium
-        return {
-          addition: { min: 1, max: 99 },
-          subtraction: { min: 1, max: 99 },
-          multiplication: { min: 1, max: 12 },
-          division: { min: 1, max: 144 }
-        }
-    }
-  }
-
-  const setDifficulty = (difficulty: 'easy' | 'medium' | 'hard' | 'abstract') => {
-    const ranges = getDifficultyRanges(difficulty)
-    setSettings(prev => ({
+  const setDifficulty = (difficulty: Difficulty) => {
+    const preset = getDifficultyPreset(difficulty)
+    setSettings((prev) => ({
       ...prev,
       difficulty,
-      ranges,
-      abstractTimeLimit: difficulty === 'abstract' ? 4 : undefined
+      ranges: preset.ranges,
+      divisionStyle: preset.divisionStyle,
+      duration: preset.lockDuration ?? preset.defaultDuration,
+      operations: preset.lockOperations
+        ? (['addition', 'subtraction', 'multiplication', 'division'] as Operation[])
+        : prev.operations,
+      abstractTimeLimit: preset.abstractTimeLimit,
     }))
   }
 
+  const activePreset = getDifficultyPreset(settings.difficulty)
 
-
-  const applyFont = (fontId: string) => {
-    const font = FONTS.find(f => f.id === fontId)
-    if (!font) return
-
-    const root = document.documentElement
-    root.style.setProperty('--font-family', font.family)
+  const triggerInputFlash = (type: 'correct' | 'incorrect') => {
+    setInputFlash(type)
+    window.setTimeout(() => setInputFlash(null), 220)
   }
 
   const generateProblem = useCallback((): Problem => {
-    const availableOps = settings.operations
-    const operation = availableOps[Math.floor(Math.random() * availableOps.length)]
-    
-    let operand1: number, operand2: number, answer: number
-    const range = settings.ranges[operation]
-    
-    switch (operation) {
-      case 'addition':
-        operand1 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
-        operand2 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
-        answer = operand1 + operand2
-        break
-      
-      case 'subtraction':
-        operand1 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
-        operand2 = Math.floor(Math.random() * (operand1 - range.min + 1)) + range.min
-        answer = operand1 - operand2
-        break
-      
-      case 'multiplication':
-        operand1 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
-        operand2 = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
-        answer = operand1 * operand2
-        break
-      
-      case 'division':
-        answer = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
-        operand2 = Math.floor(Math.random() * 12) + 1
-        operand1 = answer * operand2
-        break
-      
-      default:
-        operand1 = 1
-        operand2 = 1
-        answer = 2
-    }
-    
+    const generated = createProblem({
+      operations: settings.operations,
+      ranges: settings.ranges,
+      divisionStyle: settings.divisionStyle,
+    })
+
     return {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      operation,
-      operand1,
-      operand2,
-      answer,
+      ...generated,
       userAnswer: '',
       isCorrect: null,
       timeSpent: 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   }, [settings])
 
@@ -404,6 +306,7 @@ export default function MathTest() {
     
     // ZetaMac behavior: only advance on correct answers
     if (isCorrect && testState === 'testing') {
+      triggerInputFlash('correct')
       const nextProblem = generateProblem()
       setCurrentProblem(nextProblem)
       setProblemStartTime(Date.now())
@@ -419,6 +322,7 @@ export default function MathTest() {
         inputRef.current?.focus()
       }, 100)
     } else if (!isCorrect) {
+      triggerInputFlash('incorrect')
       // Clear input for wrong answer but stay on same problem
       setUserInput('')
       setTimeout(() => {
@@ -468,6 +372,7 @@ export default function MathTest() {
         }
         
         setProblems(prev => [...prev, completedProblem])
+        triggerInputFlash('correct')
         
         // Generate next problem and clear input
         const nextProblem = generateProblem()
@@ -747,6 +652,12 @@ export default function MathTest() {
                 Stats
               </button>
               <button 
+                onClick={() => router.push('/multiplayer')}
+                className="text-text-primary hover:text-accent transition-colors"
+              >
+                Multiplayer
+              </button>
+              <button 
                 onClick={() => router.push('/settings')}
                 className="text-text-primary hover:text-accent transition-colors"
               >
@@ -770,62 +681,74 @@ export default function MathTest() {
             <h1 className="text-4xl font-bold mb-8 text-accent text-center">Math Speed Test</h1>
           
           {/* Time Selection - MonkeyType Style */}
-          <div className="mb-8 text-center">
-            <div className="text-lg font-medium mb-4 text-text-secondary">time</div>
-            <div className="flex justify-center gap-4 mb-6">
+          <div className="setup-section mb-8 text-center">
+            <div className="setup-label">time</div>
+            <div className="flex flex-wrap justify-center gap-3 mb-2">
               {[15, 30, 60, 120].map(time => (
                 <button
                   key={time}
-                  onClick={() => setSettings(prev => ({ ...prev, duration: time }))}
-                  className={`px-4 py-2 rounded transition-colors ${
-                    settings.duration === time 
-                      ? 'bg-accent text-black font-bold' 
-                      : 'text-text-secondary hover:text-text-primary'
-                  }`}
+                  onClick={() => !activePreset.lockDuration && setSettings(prev => ({ ...prev, duration: time }))}
+                  disabled={Boolean(activePreset.lockDuration)}
+                  className={`mode-pill ${
+                    settings.duration === time ? 'mode-pill-active' : 'mode-pill-inactive'
+                  } ${activePreset.lockDuration ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {time < 60 ? `${time}s` : `${time / 60}m`}
                 </button>
               ))}
             </div>
+            {activePreset.lockDuration && (
+              <p className="text-xs text-text-secondary">Classic mode uses a fixed 120s Zetamac timer</p>
+            )}
           </div>
 
-          {/* Difficulty Selection - MonkeyType Style */}
-          <div className="mb-8 text-center">
-            <div className="text-lg font-medium mb-4 text-text-secondary">difficulty</div>
-            <div className="flex justify-center gap-4 mb-6">
-              {(['easy', 'medium', 'hard', 'abstract'] as const).map(diff => (
-                <button
-                  key={diff}
-                  onClick={() => setDifficulty(diff)}
-                  className={`px-4 py-2 rounded transition-colors ${
-                    settings.difficulty === diff 
-                      ? 'bg-accent text-black font-bold' 
-                      : 'text-text-secondary hover:text-text-primary'
-                  }`}
-                >
-                  {diff}
-                  {diff === 'abstract' && <span className="text-xs ml-1">⚡</span>}
-                </button>
+          {/* Game mode selection */}
+          <div className="setup-section mb-8">
+            <div className="setup-label text-center">mode</div>
+            <div className="space-y-6">
+              {GAME_MODE_SECTIONS.map((section) => (
+                <div key={section.title}>
+                  <div className="text-center mb-2">
+                    <div className="text-sm font-semibold text-text-primary">{section.title}</div>
+                    <div className="text-xs text-text-secondary">{section.description}</div>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {section.modes.map((diff) => (
+                      <button
+                        key={diff}
+                        onClick={() => setDifficulty(diff)}
+                        className={`mode-pill capitalize ${
+                          settings.difficulty === diff ? 'mode-pill-active' : 'mode-pill-inactive'
+                        }`}
+                        data-difficulty={diff}
+                      >
+                        {getModeDisplayName(diff)}
+                        {diff === 'abstract' && <span className="text-xs ml-1">⚡</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-            <div className="text-sm text-text-secondary opacity-75 max-w-md mx-auto">
-              {settings.difficulty === 'easy' && 'Small numbers, simple operations'}
-              {settings.difficulty === 'medium' && 'Standard ZetaMac ranges'}
-              {settings.difficulty === 'hard' && 'Large numbers, complex calculations'}
-              {settings.difficulty === 'abstract' && 'Hard problems that change every 4 seconds!'}
+            <div className="text-sm text-text-secondary opacity-75 max-w-lg mx-auto text-center mt-4">
+              {activePreset.description}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div className="stats-card">
               <h2 className="text-2xl font-semibold mb-4">Operations</h2>
+              {activePreset.lockOperations && (
+                <p className="text-sm text-text-secondary mb-3">All four operations are required in Zetamac Classic</p>
+              )}
               
               <div className="space-y-3">
                 {(['addition', 'subtraction', 'multiplication', 'division'] as const).map(op => (
-                  <label key={op} className="flex items-center">
+                  <label key={op} className={`flex items-center ${activePreset.lockOperations ? 'opacity-70' : ''}`}>
                     <input
                       type="checkbox"
                       checked={settings.operations.includes(op)}
+                      disabled={activePreset.lockOperations}
                       onChange={(e) => {
                         if (e.target.checked) {
                           setSettings(prev => ({ 
@@ -869,7 +792,9 @@ export default function MathTest() {
                       <div>20 ÷ 4 = ?</div>
                     </>
                   )}
-                  {settings.difficulty === 'medium' && (
+                  {(settings.difficulty === 'medium' ||
+                    settings.difficulty === 'classic' ||
+                    settings.difficulty === 'custom') && (
                     <>
                       <div>32 + 47 = ?</div>
                       <div>85 − 29 = ?</div>
@@ -898,11 +823,120 @@ export default function MathTest() {
             </div>
           </div>
 
+          <div className="stats-card mb-8">
+            <button
+              type="button"
+              onClick={() => setShowAppearance((open) => !open)}
+              className="w-full flex items-center justify-between text-left"
+            >
+              <div>
+                <h2 className="text-2xl font-semibold">Appearance</h2>
+                <p className="text-text-secondary text-sm mt-1">
+                  Font, size, and layout — synced with Settings
+                </p>
+              </div>
+              <span className="text-accent text-xl">{showAppearance ? '−' : '+'}</span>
+            </button>
+
+            {showAppearance && (
+              <div className="mt-6 space-y-6 border-t border-gray-700 pt-6">
+                <div>
+                  <label className="block text-text-secondary mb-2">Font</label>
+                  <select
+                    value={preferences.font}
+                    onChange={(e) => setPreferences({ font: e.target.value })}
+                    className="w-full bg-bg-primary border border-gray-600 rounded px-3 py-2 text-text-primary"
+                  >
+                    {FONTS.map((font) => (
+                      <option key={font.id} value={font.id}>
+                        {font.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-text-secondary mb-2">
+                    Font size: {preferences.fontSize}rem
+                  </label>
+                  <input
+                    type="range"
+                    min="1.5"
+                    max="6"
+                    step="0.25"
+                    value={preferences.fontSize}
+                    onChange={(e) => setPreferences({ fontSize: parseFloat(e.target.value) })}
+                    className="w-full accent-accent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-text-secondary mb-2">Problem layout</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {(['centered', 'compact', 'minimal'] as ProblemLayout[]).map((layout) => (
+                      <button
+                        key={layout}
+                        type="button"
+                        onClick={() => setPreferences({ problemLayout: layout })}
+                        className={`px-3 py-2 rounded capitalize transition-colors ${
+                          preferences.problemLayout === layout
+                            ? 'bg-accent text-black font-semibold'
+                            : 'bg-bg-primary text-text-secondary hover:text-text-primary'
+                        }`}
+                      >
+                        {layout}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <label className="flex items-center gap-2 text-text-primary">
+                    <input
+                      type="checkbox"
+                      checked={preferences.showTimer}
+                      onChange={(e) => setPreferences({ showTimer: e.target.checked })}
+                      className="accent-accent"
+                    />
+                    Show timer
+                  </label>
+                  <label className="flex items-center gap-2 text-text-primary">
+                    <input
+                      type="checkbox"
+                      checked={preferences.showRecentDots}
+                      onChange={(e) => setPreferences({ showRecentDots: e.target.checked })}
+                      className="accent-accent"
+                    />
+                    Show recent dots
+                  </label>
+                </div>
+
+                <div className="rounded-lg bg-bg-primary p-6 text-center">
+                  <div className="problem-display mb-4">24 + 18 = ?</div>
+                  <input
+                    type="text"
+                    readOnly
+                    placeholder="42"
+                    className="answer-input max-w-xs mx-auto border-b border-gray-600"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => router.push('/settings')}
+                  className="text-accent hover:underline text-sm"
+                >
+                  Open full settings →
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="text-center">
             <button
               onClick={startTest}
               disabled={settings.operations.length === 0}
-              className="btn-primary text-2xl px-12 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary start-test-button text-2xl px-12 py-4 disabled:opacity-50 disabled:cursor-not-allowed shadow-glow-accent"
             >
               Start Test
             </button>
@@ -915,16 +949,19 @@ export default function MathTest() {
 
   if (testState === 'testing') {
     const correctAnswers = problems.filter(p => p.isCorrect).length
+    const layoutClass = `test-layout-${preferences.problemLayout}`
     
     return (
-      <div className="test-container flex flex-col items-center justify-center min-h-screen p-8">
-        <div className="flex gap-8 mb-12 text-xl">
-          <div className="flex items-center">
-            <span className="text-text-secondary mr-2">Time:</span>
-            <span className={`font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-accent'}`}>
-              {formatTime(timeLeft)}
-            </span>
-          </div>
+      <div className={`test-container ${layoutClass}`}>
+        <div className="test-stats-bar flex flex-wrap justify-center gap-8 mb-12 text-xl">
+          {preferences.showTimer && (
+            <div className="flex items-center">
+              <span className="text-text-secondary mr-2">Time:</span>
+              <span className={`font-bold timer-display ${timeLeft <= 10 ? 'timer-urgent' : 'text-accent'}`}>
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+          )}
           {settings.difficulty === 'abstract' && abstractModeTimer && (
             <div className="flex items-center">
               <span className="text-text-secondary mr-2">Problem:</span>
@@ -937,66 +974,72 @@ export default function MathTest() {
             <span className="text-text-secondary mr-2">Score:</span>
             <span className="font-bold text-correct">{correctAnswers}</span>
           </div>
-          <div className="flex items-center">
-            <span className="text-text-secondary mr-2">Problems:</span>
-            <span className="font-bold text-text-primary">{problems.length}</span>
-          </div>
+          {preferences.problemLayout !== 'minimal' && (
+            <div className="flex items-center">
+              <span className="text-text-secondary mr-2">Problems:</span>
+              <span className="font-bold text-text-primary">{problems.length}</span>
+            </div>
+          )}
         </div>
 
         {currentProblem && (
-          <div className="text-center mb-12">
-            <div className="problem-display mb-8">
+          <div className="text-center mb-12 problem-stage">
+            <div className="problem-display mb-8 animate-problem-in">
               {currentProblem.operand1} {getOperationSymbol(currentProblem.operation)} {currentProblem.operand2} = ?
             </div>
             
-            <div className="max-w-xs mx-auto">
+            <div className={`mx-auto ${preferences.problemLayout === 'minimal' ? 'max-w-sm' : 'max-w-xs'}`}>
               <input
                 ref={inputRef}
                 type="number"
                 value={userInput}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
-                className="answer-input"
+                className={`answer-input ${inputFlash ? `answer-flash-${inputFlash}` : ''}`}
                 placeholder="Your answer"
                 autoFocus
               />
             </div>
             
-            <div className="flex gap-4 mt-6">
-              {!settings.autoAdvance && (
+            {preferences.problemLayout !== 'minimal' && (
+              <div className="flex gap-4 mt-6 justify-center">
+                {!settings.autoAdvance && (
+                  <button
+                    onClick={submitAnswer}
+                    className="btn-primary px-8 py-3"
+                    disabled={!userInput.trim()}
+                  >
+                    Submit Answer
+                  </button>
+                )}
                 <button
-                  onClick={submitAnswer}
-                  className="btn-primary px-8 py-3"
-                  disabled={!userInput.trim()}
+                  onClick={restartTest}
+                  className={`btn-secondary px-6 py-3 flex items-center gap-2 hover:bg-red-600 hover:text-white transition-colors ${tabPressed ? 'bg-yellow-600 text-white' : ''}`}
+                  title="Restart test (Tab+Enter, Ctrl+R, or Esc) - counts as restart in stats"
                 >
-                  Submit Answer
+                  Restart
+                  <span className="text-xs opacity-75 ml-1">
+                    {tabPressed ? 'Press Enter!' : 'Tab+Enter'}
+                  </span>
                 </button>
-              )}
-              <button
-                onClick={restartTest}
-                className={`btn-secondary px-6 py-3 flex items-center gap-2 hover:bg-red-600 hover:text-white transition-colors ${tabPressed ? 'bg-yellow-600 text-white' : ''}`}
-                title="Restart test (Tab+Enter, Ctrl+R, or Esc) - counts as restart in stats"
-              >
-                Restart
-                <span className="text-xs opacity-75 ml-1">
-                  {tabPressed ? 'Press Enter!' : 'Tab+Enter'}
-                </span>
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         )}
 
-        <div className="flex gap-2 mt-8">
-          {problems.slice(-10).map((problem) => (
-            <div
-              key={problem.id}
-              className={`w-4 h-4 rounded-full ${
-                problem.isCorrect ? 'bg-correct' : 'bg-incorrect'
-              }`}
-              title={`${problem.operand1} ${getOperationSymbol(problem.operation)} ${problem.operand2} = ${problem.answer} (you: ${problem.userAnswer})`}
-            />
-          ))}
-        </div>
+        {preferences.showRecentDots && (
+          <div className="flex gap-2 mt-8 flex-wrap justify-center">
+            {problems.slice(-10).map((problem) => (
+              <div
+                key={problem.id}
+                className={`recent-dot ${
+                  problem.isCorrect ? 'bg-correct' : 'bg-incorrect'
+                }`}
+                title={`${problem.operand1} ${getOperationSymbol(problem.operation)} ${problem.operand2} = ${problem.answer} (you: ${problem.userAnswer})`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     )
   }
