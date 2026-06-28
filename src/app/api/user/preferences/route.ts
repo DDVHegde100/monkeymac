@@ -1,86 +1,99 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MongoClient, ObjectId } from 'mongodb'
+import { ObjectId } from 'mongodb'
 import jwt from 'jsonwebtoken'
+import { connectToDatabase } from '../../../../lib/mongodb'
+import { DEFAULT_PREFERENCES, normalizePreferences } from '../../../../lib/preferences'
+import type { UserPreferences } from '../../../../config/types'
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/monkeymax'
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this'
 
-export async function POST(request: NextRequest) {
-  let client: MongoClient | null = null
-  
+function getUserId(request: NextRequest): string | null {
+  const token = request.cookies.get('token')?.value
+  if (!token) return null
+
   try {
-    const { theme, font } = await request.json()
-    
-    // Get user from JWT token
-    const token = request.cookies.get('token')?.value
-    if (!token) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
-    
-    client = new MongoClient(MONGODB_URI)
-    await client.connect()
-    
-    const db = client.db('monkeymax')
-    const users = db.collection('users')
-
-    // Update user preferences
-    await users.updateOne(
-      { _id: new ObjectId(decoded.userId) },
-      { 
-        $set: { 
-          preferences: {
-            theme: theme || 'dark',
-            font: font || 'fira-code'
-          }
-        }
-      }
-    )
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error saving preferences:', error)
-    return NextResponse.json({ error: 'Failed to save preferences' }, { status: 500 })
-  } finally {
-    if (client) {
-      await client.close()
-    }
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
+    return decoded.userId
+  } catch {
+    return null
   }
 }
 
+async function readPreferences(userId: string): Promise<UserPreferences> {
+  const { db } = await connectToDatabase()
+  const user = await db.collection('users').findOne(
+    { _id: new ObjectId(userId) },
+    { projection: { preferences: 1 } }
+  )
+
+  return normalizePreferences(user?.preferences)
+}
+
+async function writePreferences(userId: string, preferences: UserPreferences) {
+  const { db } = await connectToDatabase()
+  await db.collection('users').updateOne(
+    { _id: new ObjectId(userId) },
+    {
+      $set: {
+        preferences,
+        updatedAt: new Date(),
+      },
+    }
+  )
+}
+
 export async function GET(request: NextRequest) {
-  let client: MongoClient | null = null
-  
   try {
-    // Get user from JWT token
-    const token = request.cookies.get('token')?.value
-    if (!token) {
+    const userId = getUserId(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
-    
-    client = new MongoClient(MONGODB_URI)
-    await client.connect()
-    
-    const db = client.db('monkeymax')
-    const users = db.collection('users')
-
-    // Get user preferences
-    const user = await users.findOne(
-      { _id: new ObjectId(decoded.userId) },
-      { projection: { preferences: 1 } }
-    )
-    
-    const preferences = user?.preferences || { theme: 'dark', font: 'fira-code' }
-
+    const preferences = await readPreferences(userId)
     return NextResponse.json({ preferences })
   } catch (error) {
     console.error('Error loading preferences:', error)
     return NextResponse.json({ error: 'Failed to load preferences' }, { status: 500 })
-  } finally {
-    if (client) {
-      await client.close()
-    }
+  }
+}
+
+async function savePreferences(request: NextRequest) {
+  const userId = getUserId(request)
+  if (!userId) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
+
+  const body = await request.json()
+  const current = await readPreferences(userId)
+  const preferences = normalizePreferences({ ...current, ...body })
+
+  await writePreferences(userId, preferences)
+  return NextResponse.json({ success: true, preferences })
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    return await savePreferences(request)
+  } catch (error) {
+    console.error('Error saving preferences:', error)
+    return NextResponse.json({ error: 'Failed to save preferences' }, { status: 500 })
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    return await savePreferences(request)
+  } catch (error) {
+    console.error('Error saving preferences:', error)
+    return NextResponse.json({ error: 'Failed to save preferences' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    return await savePreferences(request)
+  } catch (error) {
+    console.error('Error saving preferences:', error)
+    return NextResponse.json({ error: 'Failed to save preferences' }, { status: 500 })
   }
 }
