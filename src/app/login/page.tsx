@@ -4,6 +4,15 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+function getSafeRedirect(): string {
+  if (typeof window === 'undefined') return '/test'
+  const redirect = new URLSearchParams(window.location.search).get('redirect')
+  if (redirect?.startsWith('/') && !redirect.startsWith('//')) {
+    return redirect
+  }
+  return '/test'
+}
+
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -12,10 +21,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  // Check for success message from registration
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const message = urlParams.get('message')
+    const message = new URLSearchParams(window.location.search).get('message')
     if (message) {
       setSuccess(message)
     }
@@ -38,7 +45,7 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push('/test')
+        router.push(getSafeRedirect())
       } else {
         setError(data.error || 'Login failed')
       }

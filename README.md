@@ -2,11 +2,17 @@
 
 ![MonkeyMac Banner](public/monk.png)
 
-**Live Demo**: ([monkeymac.vercel.app](https://monkeymac.vercel.app/test))
+A comprehensive mental math training application that combines the aesthetic excellence of MonkeyType with the mathematical rigor of Zetamac. Practice timed arithmetic, track your progress across difficulties, customize themes and fonts, compete on leaderboards, unlock achievements, and race friends in real-time multiplayer with ELO-ranked party codes.
 
-A comprehensive mental math training application that combines the aesthetic excellence of MonkeyType with the mathematical rigor of Zetamac. This is an application idea I have been wanting to make for a while since I love practicing with MonkeyType and I have recently started to do Zetamac as well. It's unfortunate for how good Zetamac is that it doesn't have any sort of tracking functionality or anything, so I decided to change that in order to be able to track my progress and see how much I can improve over time for different difficulties of problems.
+**Live Demo**: [monkeymac.vercel.app](https://monkeymac.vercel.app/test)
 
-Of course, I will be making changes to this application, and some features I have forthcoming include adding leaderboards, daily speedrun challenges with problem sets, and badges, along with exclusive styling and such. Feel free to let me know if you have any changes you have in mind or if there is a critical feature I missed in issues. I would already appreciate if you could star this repo if you enjoy my product.
+## Features
+
+- **Zetamac-faithful modes** — Classic (120s, exact Zetamac ranges), Medium, Hard, Abstract, and custom free play
+- **Test customization** — Themes, fonts, layout, timer visibility, and a custom theme builder
+- **Stats & analytics** — Personal history, operation breakdowns, streaks, and performance insights
+- **Leaderboards & achievements** — Solo rankings plus multiplayer ELO and win leaderboards
+- **Multiplayer races** — Create or join 6-character party codes (up to 4 players), shared problem seeds, live score sync, ELO updates
 
 ## Technical Stack
 
@@ -41,25 +47,11 @@ src/
 ├── app/                          # Next.js App Router pages
 │   ├── api/                      # Server-side API endpoints
 │   │   ├── auth/                 # Authentication routes
-│   │   │   ├── login/route.ts    # POST /api/auth/login
-│   │   │   ├── logout/route.ts   # POST /api/auth/logout
-│   │   │   ├── me/route.ts       # GET /api/auth/me
-│   │   │   └── register/route.ts # POST /api/auth/register
-│   │   ├── test/                 # Test management
-│   │   │   └── save-result/route.ts # POST /api/test/save-result
+│   │   ├── party/                # Multiplayer party lobby & race sync
+│   │   ├── test/                 # Test result saving
 │   │   └── user/                 # User data endpoints
-│   │       ├── analytics/route.ts    # GET /api/user/analytics
-│   │       ├── insights/route.ts     # GET /api/user/insights
-│   │       ├── leaderboards/route.ts # GET /api/user/leaderboards
-│   │       ├── operation-stats/route.ts # GET /api/user/operation-stats
-│   │       ├── performance/route.ts  # GET /api/user/performance
-│   │       ├── preferences/route.ts  # GET/POST /api/user/preferences
-│   │       ├── search/route.ts       # GET /api/user/search
-│   │       ├── stats/route.ts        # GET /api/user/stats
-│   │       └── test-history/route.ts # GET /api/user/test-history
-│   ├── analytics/page.tsx        # Performance analytics dashboard
-│   ├── history/page.tsx          # Test history with filtering
-│   ├── leaderboards/page.tsx     # Global rankings
+│   ├── multiplayer/page.tsx      # Party lobby and live races
+│   ├── leaderboards/page.tsx     # Solo + multiplayer rankings
 │   ├── login/page.tsx            # Authentication form
 │   ├── register/page.tsx         # User registration
 │   ├── search/page.tsx           # User search functionality
@@ -123,6 +115,10 @@ interface User {
     totalTimeSpent: number
     averagePPM: number
     testsRestarted: number
+    elo: number
+    multiplayerWins: number
+    multiplayerLosses: number
+    multiplayerGames: number
   }
   preferences?: {
     difficulty: 'easy' | 'medium' | 'hard'
@@ -226,8 +222,9 @@ npm run dev
 ```bash
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/monkeymax
 JWT_SECRET=your-256-bit-secret-key
-NEXTAUTH_SECRET=additional-auth-secret
 ```
+
+See `.env.example` for a full template and Vercel deploy checklist.
 
 ### Build and Deployment
 ```bash
