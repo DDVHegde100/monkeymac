@@ -78,23 +78,33 @@ export default function KeyboardShortcuts() {
       },
       {
         key: '1',
-        description: 'Set difficulty to Easy',
+        description: 'Set mode to Easy',
         action: () => setDifficulty('easy')
       },
       {
         key: '2',
-        description: 'Set difficulty to Medium',
-        action: () => setDifficulty('medium')
+        description: 'Set mode to Zetamac Classic',
+        action: () => setDifficulty('classic')
       },
       {
         key: '3',
-        description: 'Set difficulty to Hard',
-        action: () => setDifficulty('hard')
+        description: 'Set mode to Medium',
+        action: () => setDifficulty('medium')
       },
       {
         key: '4',
-        description: 'Set difficulty to Abstract',
+        description: 'Set mode to Hard',
+        action: () => setDifficulty('hard')
+      },
+      {
+        key: '5',
+        description: 'Set mode to Abstract',
         action: () => setDifficulty('abstract')
+      },
+      {
+        key: '6',
+        description: 'Set mode to Custom',
+        action: () => setDifficulty('custom')
       },
 
       {
@@ -135,10 +145,9 @@ export default function KeyboardShortcuts() {
   }, [router, isVisible])
 
   const setDifficulty = (difficulty: string) => {
-    const difficultySelect = document.querySelector('select[name="difficulty"]') as HTMLSelectElement
-    if (difficultySelect) {
-      difficultySelect.value = difficulty
-      difficultySelect.dispatchEvent(new Event('change', { bubbles: true }))
+    const button = document.querySelector(`[data-difficulty="${difficulty}"]`) as HTMLButtonElement
+    if (button) {
+      button.click()
     }
   }
 
