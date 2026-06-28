@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '../../../../lib/mongodb'
+import { getRankTitle, normalizeUserStats } from '../../../../lib/userStats'
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,6 +66,7 @@ export async function GET(request: NextRequest) {
 
     // Get records data
     const records = user.records || {}
+    const competitive = normalizeUserStats(user.stats)
     
     const stats = {
       totalTests,
@@ -79,7 +81,12 @@ export async function GET(request: NextRequest) {
       longestStreak,
       favoriteOperation,
       recentTests,
-      records
+      records,
+      elo: competitive.elo,
+      multiplayerWins: competitive.multiplayerWins,
+      multiplayerLosses: competitive.multiplayerLosses,
+      multiplayerGames: competitive.multiplayerGames,
+      rankTitle: getRankTitle(competitive.elo),
     }
 
     return NextResponse.json({ stats })
