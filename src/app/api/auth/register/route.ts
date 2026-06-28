@@ -44,7 +44,11 @@ export async function POST(request: NextRequest) {
         bestScore: 0,
         averageScore: 0,
         totalProblems: 0,
-        accuracy: 0
+        accuracy: 0,
+        elo: 1200,
+        multiplayerWins: 0,
+        multiplayerLosses: 0,
+        multiplayerGames: 0,
       }
     }
 

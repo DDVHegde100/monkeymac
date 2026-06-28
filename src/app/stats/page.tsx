@@ -17,6 +17,11 @@ interface UserStats {
   favoriteOperation: string
   testsRestarted: number
   records: Record<string, Record<string, number>>
+  elo: number
+  multiplayerWins: number
+  multiplayerLosses: number
+  multiplayerGames: number
+  rankTitle: string
   recentTests: Array<{
     id: string
     score: number
@@ -326,7 +331,7 @@ export default function StatsPage() {
 
   const RecordsTable = ({ records }: { records: Record<string, Record<string, number>> }) => {
     const durations = ['15s', '30s', '60s', '120s']
-    const difficulties = ['easy', 'medium', 'hard', 'abstract']
+    const difficulties = ['easy', 'classic', 'medium', 'hard', 'abstract', 'custom']
     
     const getDurationLabel = (duration: string) => {
       switch (duration) {
@@ -541,6 +546,40 @@ export default function StatsPage() {
                   title="Time Spent Training" 
                   value={formatTime(stats.totalTimeSpent || 0)} 
                 />
+              </div>
+
+              <div className="bg-bg-secondary rounded-lg p-6 border border-accent/30">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-text-primary flex items-center">
+                      <span className="mr-3">⚔️</span>
+                      Competitive Profile
+                    </h2>
+                    <p className="text-text-secondary mt-1">
+                      Multiplayer rating and head-to-head record
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => router.push('/multiplayer')}
+                    className="btn-primary px-6 py-2"
+                  >
+                    Play Multiplayer
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <StatCard title="ELO Rating" value={stats.elo ?? 1200} subtitle={stats.rankTitle ?? 'Novice'} />
+                  <StatCard title="Multiplayer Wins" value={stats.multiplayerWins ?? 0} />
+                  <StatCard title="Multiplayer Losses" value={stats.multiplayerLosses ?? 0} />
+                  <StatCard
+                    title="Games Played"
+                    value={stats.multiplayerGames ?? 0}
+                    subtitle={
+                      (stats.multiplayerWins ?? 0) + (stats.multiplayerLosses ?? 0) > 0
+                        ? `${Math.round(((stats.multiplayerWins ?? 0) / Math.max(stats.multiplayerGames ?? 1, 1)) * 100)}% win rate`
+                        : 'no ranked games yet'
+                    }
+                  />
+                </div>
               </div>
 
               {/* Performance Metrics */}
