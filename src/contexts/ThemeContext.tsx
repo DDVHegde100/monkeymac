@@ -1,112 +1,114 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { applyTheme } from '../utils/theme'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import type { UserPreferences } from '../config/types'
+import {
+  applyPreferences,
+  DEFAULT_PREFERENCES,
+  loadLocalPreferences,
+  normalizePreferences,
+  saveLocalPreferences,
+} from '../lib/preferences'
 
-interface ThemeContextType {
-  theme: string
-  setTheme: (theme: string) => void
-  font: string
-  setFont: (font: string) => void
+interface PreferencesContextType {
+  preferences: UserPreferences
+  setPreferences: (update: Partial<UserPreferences>) => Promise<void>
   isLoading: boolean
+  theme: string
+  setTheme: (theme: string) => Promise<void>
+  font: string
+  setFont: (font: string) => Promise<void>
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
+const PreferencesContext = createContext<PreferencesContextType | undefined>(undefined)
 
 export function useTheme() {
-  const context = useContext(ThemeContext)
+  const context = useContext(PreferencesContext)
   if (!context) {
     throw new Error('useTheme must be used within a ThemeProvider')
   }
   return context
 }
 
+export function usePreferences() {
+  return useTheme()
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState('monokai')
-  const [font, setFontState] = useState('JetBrains Mono')
+  const [preferences, setPreferencesState] = useState<UserPreferences>(DEFAULT_PREFERENCES)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const loadTheme = async () => {
+    const load = async () => {
       try {
-        // Try to load from user preferences first
         const response = await fetch('/api/user/preferences')
         if (response.ok) {
           const data = await response.json()
-          if (data.preferences?.theme) {
-            setThemeState(data.preferences.theme)
-            applyTheme(data.preferences.theme)
-            localStorage.setItem('selectedTheme', data.preferences.theme)
-          }
-          if (data.preferences?.font) {
-            setFontState(data.preferences.font)
-            localStorage.setItem('selectedFont', data.preferences.font)
-          }
-        } else {
-          // Fall back to localStorage for guests
-          const savedTheme = localStorage.getItem('selectedTheme') || 'monokai'
-          const savedFont = localStorage.getItem('selectedFont') || 'JetBrains Mono'
-          setThemeState(savedTheme)
-          setFontState(savedFont)
-          applyTheme(savedTheme)
+          const next = normalizePreferences(data.preferences)
+          setPreferencesState(next)
+          applyPreferences(next)
+          saveLocalPreferences(next)
+          return
         }
-      } catch (error) {
-        // Fall back to localStorage if API fails
-        const savedTheme = localStorage.getItem('selectedTheme') || 'monokai'
-        const savedFont = localStorage.getItem('selectedFont') || 'JetBrains Mono'
-        setThemeState(savedTheme)
-        setFontState(savedFont)
-        applyTheme(savedTheme)
-      } finally {
-        setIsLoading(false)
+      } catch {
+        // fall back to local storage
       }
+
+      const local = loadLocalPreferences()
+      setPreferencesState(local)
+      applyPreferences(local)
     }
 
-    loadTheme()
+    load().finally(() => setIsLoading(false))
   }, [])
 
-  const setTheme = async (newTheme: string) => {
-    setThemeState(newTheme)
-    applyTheme(newTheme)
-    localStorage.setItem('selectedTheme', newTheme)
+  const persistPreferences = useCallback(async (next: UserPreferences) => {
+    setPreferencesState(next)
+    applyPreferences(next)
+    saveLocalPreferences(next)
 
-    // Try to save to backend if user is authenticated
     try {
-      const response = await fetch('/api/user/preferences', {
+      await fetch('/api/user/preferences', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme: newTheme, font })
+        body: JSON.stringify(next),
       })
-      if (!response.ok) {
-        console.log('Failed to save theme to backend, using localStorage')
-      }
-    } catch (error) {
-      console.log('Theme saved to localStorage only')
+    } catch {
+      // local storage already updated
     }
-  }
+  }, [])
 
-  const setFont = async (newFont: string) => {
-    setFontState(newFont)
-    localStorage.setItem('selectedFont', newFont)
+  const setPreferences = useCallback(
+    async (update: Partial<UserPreferences>) => {
+      const next = normalizePreferences({ ...preferences, ...update })
+      await persistPreferences(next)
+    },
+    [preferences, persistPreferences]
+  )
 
-    // Try to save to backend if user is authenticated
-    try {
-      const response = await fetch('/api/user/preferences', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme, font: newFont })
-      })
-      if (!response.ok) {
-        console.log('Failed to save font to backend, using localStorage')
-      }
-    } catch (error) {
-      console.log('Font saved to localStorage only')
-    }
-  }
+  const setTheme = useCallback(
+    async (theme: string) => setPreferences({ theme }),
+    [setPreferences]
+  )
+
+  const setFont = useCallback(
+    async (font: string) => setPreferences({ font }),
+    [setPreferences]
+  )
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, font, setFont, isLoading }}>
+    <PreferencesContext.Provider
+      value={{
+        preferences,
+        setPreferences,
+        isLoading,
+        theme: preferences.theme,
+        setTheme,
+        font: preferences.font,
+        setFont,
+      }}
+    >
       {children}
-    </ThemeContext.Provider>
+    </PreferencesContext.Provider>
   )
 }
