@@ -15,8 +15,10 @@
   --correct: #00ff00;
   --incorrect: #ff0000;
   
-  /* Default Font */
-  --font-family: 'Fira Code', Monaco, Consolas, monospace;
+  /* Default Font & test sizing */
+  --font-family: 'JetBrains Mono', monospace;
+  --test-font-size: 3rem;
+  --answer-font-size: calc(var(--test-font-size) * 0.75);
   
   /* Legacy variables for compatibility */
   --foreground-rgb: 255, 255, 255;
@@ -41,11 +43,47 @@ body {
 }
 
 .problem-display {
-  @apply text-6xl font-mono text-center mb-8 text-text-primary;
+  @apply font-mono text-center text-text-primary;
+  font-size: var(--test-font-size);
+  line-height: 1.1;
 }
 
 .answer-input {
-  @apply text-4xl font-mono bg-transparent border-none outline-none text-center w-full;
+  @apply font-mono bg-transparent border-none outline-none text-center w-full text-text-primary;
+  font-size: var(--answer-font-size);
+}
+
+.test-layout-centered {
+  @apply flex flex-col items-center justify-center min-h-screen p-8;
+}
+
+.test-layout-compact {
+  @apply flex flex-col items-center justify-center min-h-screen px-6 py-4;
+}
+
+.test-layout-compact .problem-display {
+  margin-bottom: 1.5rem;
+}
+
+.test-layout-compact .test-stats-bar {
+  @apply gap-4 mb-6 text-base;
+}
+
+.test-layout-minimal {
+  @apply flex flex-col items-center justify-center min-h-screen p-4;
+}
+
+.test-layout-minimal .test-stats-bar {
+  @apply mb-4 text-sm opacity-80;
+}
+
+.test-layout-minimal .problem-display {
+  margin-bottom: 1rem;
+}
+
+.layout-preview .problem-display {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
 }
 
 .stats-card {
@@ -62,4 +100,99 @@ body {
 
 .main-content {
   min-height: calc(100vh - 120px);
+}
+
+.setup-section {
+  @apply rounded-xl px-4 py-6;
+  background-color: color-mix(in srgb, var(--bg-secondary) 40%, transparent);
+}
+
+.setup-label {
+  @apply text-lg font-medium mb-4 text-text-secondary uppercase tracking-widest;
+}
+
+.mode-pill {
+  @apply px-4 py-2 rounded-full transition-all duration-200;
+}
+
+.mode-pill-active {
+  @apply bg-accent text-black font-bold scale-105 shadow-glow-accent;
+}
+
+.mode-pill-inactive {
+  @apply text-text-secondary hover:text-text-primary hover:bg-bg-secondary;
+}
+
+.shadow-glow-accent {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.timer-display {
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-urgent {
+  color: var(--incorrect);
+  animation: timer-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.05); }
+}
+
+@keyframes problem-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-problem-in {
+  animation: problem-in 0.18s ease-out;
+}
+
+.answer-flash-correct {
+  animation: flash-correct 0.22s ease-out;
+}
+
+.answer-flash-incorrect {
+  animation: flash-incorrect 0.22s ease-out;
+}
+
+@keyframes flash-correct {
+  0% { color: var(--text-primary); }
+  50% { color: var(--correct); transform: scale(1.03); }
+  100% { color: var(--text-primary); }
+}
+
+@keyframes flash-incorrect {
+  0% { color: var(--text-primary); }
+  50% { color: var(--incorrect); transform: translateX(-2px); }
+  100% { color: var(--text-primary); }
+}
+
+.recent-dot {
+  @apply w-4 h-4 rounded-full transition-transform duration-150;
+}
+
+.recent-dot:hover {
+  transform: scale(1.15);
+}
+
+@media (max-width: 640px) {
+  .problem-display {
+    font-size: clamp(1.75rem, 8vw, var(--test-font-size));
+  }
+
+  .answer-input {
+    font-size: clamp(1.25rem, 6vw, var(--answer-font-size));
+  }
+
+  .test-stats-bar {
+    gap: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .mode-pill {
+    @apply px-3 py-1.5 text-sm;
+  }
 }
