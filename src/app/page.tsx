@@ -13,7 +13,7 @@ export default function HomePage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/check')
+        const response = await fetch('/api/auth/me')
         if (response.ok) {
           const data = await response.json()
           setUser(data.user)
