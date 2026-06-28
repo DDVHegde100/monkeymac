@@ -88,6 +88,14 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
                 Leaderboards
               </Link>
               <Link 
+                href="/multiplayer" 
+                className={`hover:text-accent transition-colors ${
+                  pathname === '/multiplayer' ? 'text-accent' : 'text-text-primary'
+                }`}
+              >
+                Multiplayer
+              </Link>
+              <Link 
                 href="/settings" 
                 className={`hover:text-accent transition-colors ${
                   pathname === '/settings' ? 'text-accent' : 'text-text-primary'
