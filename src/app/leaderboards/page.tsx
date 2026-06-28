@@ -17,11 +17,15 @@ interface LeaderboardEntry {
   standardDeviation?: number
   totalTests?: number
   totalProblems?: number
-  testCount: number
+  testCount?: number
   overallAccuracy?: number
   daysActive?: number
   firstTestDate?: string
   lastTestDate?: string
+  elo?: number
+  multiplayerGames?: number
+  multiplayerWins?: number
+  multiplayerLosses?: number
 }
 
 interface Achievement {
@@ -41,6 +45,8 @@ interface LeaderboardsData {
     speed?: LeaderboardEntry[]
     consistency?: LeaderboardEntry[]
     totalTests?: LeaderboardEntry[]
+    elo?: LeaderboardEntry[]
+    multiplayerWins?: LeaderboardEntry[]
   }
   userRankings: {
     bestScore?: { value: number; rank: number | null; outOf: number | null }
@@ -48,6 +54,8 @@ interface LeaderboardsData {
     accuracy?: { value: number; rank: number | null; outOf: number | null }
     speed?: { value: number; rank: number | null; outOf: number | null }
     totalTests?: { value: number; rank: number | null; outOf: number | null }
+    elo?: { value: number; rank: number | null; outOf: number | null }
+    multiplayerWins?: { value: number; rank: number | null; outOf: number | null }
   }
   achievements: {
     achievements: Achievement[]
@@ -137,7 +145,11 @@ export default function LeaderboardsPage() {
               </div>
               <div>
                 <div className="font-semibold text-text">{entry.username}</div>
-                <div className="text-sm text-sub">{entry.testCount} tests</div>
+                <div className="text-sm text-sub">
+                  {type === 'elo' || type === 'multiplayerWins'
+                    ? `${entry.multiplayerGames ?? 0} races`
+                    : `${entry.testCount ?? 0} tests`}
+                </div>
               </div>
             </div>
             <div className="text-right">
@@ -172,6 +184,20 @@ export default function LeaderboardsPage() {
                 <>
                   <div className="text-lg font-bold text-text">{entry.totalTests}</div>
                   <div className="text-sm text-sub">{entry.daysActive} days active</div>
+                </>
+              )}
+              {type === 'elo' && (
+                <>
+                  <div className="text-lg font-bold text-text">{entry.elo}</div>
+                  <div className="text-sm text-sub">
+                    {entry.multiplayerWins}W / {entry.multiplayerLosses}L
+                  </div>
+                </>
+              )}
+              {type === 'multiplayerWins' && (
+                <>
+                  <div className="text-lg font-bold text-text">{entry.multiplayerWins} wins</div>
+                  <div className="text-sm text-sub">ELO {entry.elo}</div>
                 </>
               )}
             </div>
@@ -333,7 +359,9 @@ export default function LeaderboardsPage() {
                   { key: 'accuracy', label: 'Accuracy' },
                   { key: 'speed', label: 'Speed (PPM)' },
                   { key: 'consistency', label: 'Consistency' },
-                  { key: 'totalTests', label: 'Most Active' }
+                  { key: 'totalTests', label: 'Most Active' },
+                  { key: 'elo', label: 'Multiplayer ELO' },
+                  { key: 'multiplayerWins', label: 'Multiplayer Wins' },
                 ].map(({ key, label }) => (
                   <button
                     key={key}
@@ -380,6 +408,8 @@ export default function LeaderboardsPage() {
                   {selectedLeaderboard === 'speed' && 'Speed Leaderboard'}
                   {selectedLeaderboard === 'consistency' && 'Consistency Leaderboard'}
                   {selectedLeaderboard === 'totalTests' && 'Most Active Users'}
+                  {selectedLeaderboard === 'elo' && 'Multiplayer ELO Leaderboard'}
+                  {selectedLeaderboard === 'multiplayerWins' && 'Multiplayer Wins Leaderboard'}
                 </h3>
                 
                 {data?.leaderboards && renderLeaderboard(

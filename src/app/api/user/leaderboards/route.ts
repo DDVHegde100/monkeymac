@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '../../../../lib/mongodb'
+import { normalizeUserStats } from '../../../../lib/userStats'
 
 export async function GET(request: NextRequest) {
   try {
@@ -347,6 +348,46 @@ async function generateLeaderboards(db: any, category: string, timeframe: string
     ]).toArray()
   }
 
+  if (category === 'overall' || category === 'multiplayer') {
+    leaderboards.elo = await users
+      .aggregate([
+        {
+          $project: {
+            userId: '$_id',
+            username: 1,
+            email: 1,
+            elo: { $ifNull: ['$stats.elo', 1200] },
+            multiplayerGames: { $ifNull: ['$stats.multiplayerGames', 0] },
+            multiplayerWins: { $ifNull: ['$stats.multiplayerWins', 0] },
+            multiplayerLosses: { $ifNull: ['$stats.multiplayerLosses', 0] },
+          },
+        },
+        { $match: { multiplayerGames: { $gte: 1 } } },
+        { $sort: { elo: -1 } },
+        { $limit: limit },
+      ])
+      .toArray()
+
+    leaderboards.multiplayerWins = await users
+      .aggregate([
+        {
+          $project: {
+            userId: '$_id',
+            username: 1,
+            email: 1,
+            elo: { $ifNull: ['$stats.elo', 1200] },
+            multiplayerGames: { $ifNull: ['$stats.multiplayerGames', 0] },
+            multiplayerWins: { $ifNull: ['$stats.multiplayerWins', 0] },
+            multiplayerLosses: { $ifNull: ['$stats.multiplayerLosses', 0] },
+          },
+        },
+        { $match: { multiplayerWins: { $gte: 1 } } },
+        { $sort: { multiplayerWins: -1, elo: -1 } },
+        { $limit: limit },
+      ])
+      .toArray()
+  }
+
   return leaderboards
 }
 
@@ -354,6 +395,47 @@ async function getUserRankings(db: any, userId: string, category: string, timefr
   // Get user's position in each leaderboard
   const userObjectId = new ObjectId(userId)
   const rankings: Record<string, any> = {}
+
+  const users = db.collection('users')
+  const userDoc = await users.findOne({ _id: userObjectId })
+  const userStats = normalizeUserStats(userDoc?.stats)
+
+  if (category === 'overall' || category === 'multiplayer') {
+    const totalMultiplayer = await users.countDocuments({
+      'stats.multiplayerGames': { $gte: 1 },
+    })
+
+    if (userStats.multiplayerGames >= 1) {
+      const eloRank =
+        (await users.countDocuments({
+          'stats.multiplayerGames': { $gte: 1 },
+          'stats.elo': { $gt: userStats.elo },
+        })) + 1
+
+      rankings.elo = {
+        value: userStats.elo,
+        rank: eloRank,
+        outOf: totalMultiplayer,
+      }
+    }
+
+    const totalWinners = await users.countDocuments({
+      'stats.multiplayerWins': { $gte: 1 },
+    })
+
+    if (userStats.multiplayerWins >= 1) {
+      const winsRank =
+        (await users.countDocuments({
+          'stats.multiplayerWins': { $gt: userStats.multiplayerWins },
+        })) + 1
+
+      rankings.multiplayerWins = {
+        value: userStats.multiplayerWins,
+        rank: winsRank,
+        outOf: totalWinners,
+      }
+    }
+  }
 
   // This is a simplified version - in a real implementation, you'd calculate exact rankings
   const tests = db.collection('test_results')
