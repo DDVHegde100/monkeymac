@@ -1,3 +1,9 @@
+import {
+  generateZetamacWeightedProblem,
+  type ProblemHistory,
+} from './zetamacEngine'
+
+export type { ProblemHistory }
 export type Operation = 'addition' | 'subtraction' | 'multiplication' | 'division'
 export type Difficulty = 'easy' | 'classic' | 'medium' | 'hard' | 'abstract' | 'custom'
 
@@ -38,6 +44,9 @@ export interface GenerateProblemOptions {
   ranges: DifficultyRanges
   divisionStyle?: 'reverse-multiply' | 'quotient-first'
   random?: () => number
+  /** Use Zetamac-style weighted generation (classic / medium). */
+  zetamacWeighted?: boolean
+  history?: ProblemHistory
 }
 
 const ZETAMAC_RANGES: DifficultyRanges = {
@@ -162,6 +171,10 @@ function generateDivision(
 }
 
 export function generateProblem(options: GenerateProblemOptions): GeneratedProblem {
+  if (options.zetamacWeighted) {
+    return generateZetamacWeightedProblem(options)
+  }
+
   const random = options.random ?? Math.random
   const availableOps = options.operations.length > 0 ? options.operations : (['addition'] as Operation[])
   const operation = pickOperation(availableOps, random)
