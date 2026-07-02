@@ -12,6 +12,11 @@ import {
   generateProblem,
   getDifficultyPreset,
 } from '../../lib/problemGenerator'
+import {
+  createProblemHistory,
+  recordProblemHistory,
+  usesZetamacWeighting,
+} from '../../lib/zetamacEngine'
 
 interface PartyPlayer {
   userId: string
@@ -72,11 +77,29 @@ export default function MultiplayerPage() {
   const makeProblem = useCallback(
     (partyState: PartyState, index: number) => {
       const preset = getDifficultyPreset(partyState.settings.difficulty)
+      const weighted = usesZetamacWeighting(partyState.settings.difficulty)
+      const history = createProblemHistory()
+
+      if (weighted && partyState.seed != null) {
+        for (let i = 0; i < index; i += 1) {
+          const prev = generateProblem({
+            operations: partyState.settings.operations,
+            ranges: preset.ranges,
+            divisionStyle: preset.divisionStyle,
+            zetamacWeighted: true,
+            history,
+            random: createSeededRandom(partyState.seed + i * 7919),
+          })
+          recordProblemHistory(history, prev)
+        }
+      }
 
       return generateProblem({
         operations: partyState.settings.operations,
         ranges: preset.ranges,
         divisionStyle: preset.divisionStyle,
+        zetamacWeighted: weighted,
+        history: weighted ? history : undefined,
         random:
           partyState.seed != null
             ? createSeededRandom(partyState.seed + index * 7919)
@@ -479,7 +502,11 @@ export default function MultiplayerPage() {
                 </div>
                 <input
                   ref={inputRef}
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9-]*"
+                  enterKeyHint="done"
+                  autoComplete="off"
                   value={userInput}
                   onChange={(e) => handleInputChange(e.target.value)}
                   className="answer-input max-w-xs mx-auto"
