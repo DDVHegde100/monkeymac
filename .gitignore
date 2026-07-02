@@ -50,4 +50,5 @@ pids
 *.seed
 *.pid.lock
 
-/generated/prisma
+# Separate private repo (see slither-bot/README.md)
+/slither-bot/
