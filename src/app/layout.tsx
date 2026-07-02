@@ -7,6 +7,14 @@ export const metadata: Metadata = {
   description: 'Practice mental math with style - inspired by MonkeyType',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover' as const,
+}
+
 export default function RootLayout({
   children,
 }: {
