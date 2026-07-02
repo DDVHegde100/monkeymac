@@ -13,6 +13,12 @@ import {
   generateProblem as createProblem,
   getDifficultyPreset,
 } from '../../lib/problemGenerator'
+import {
+  createProblemHistory,
+  recordProblemHistory,
+  usesZetamacWeighting,
+  type ProblemHistory,
+} from '../../lib/zetamacEngine'
 
 interface TestSettings {
   duration: number
@@ -69,6 +75,7 @@ export default function MathTest() {
   const [inputFlash, setInputFlash] = useState<'correct' | 'incorrect' | null>(null)
   
   const inputRef = useRef<HTMLInputElement>(null)
+  const problemHistoryRef = useRef<ProblemHistory>(createProblemHistory())
   const testStartTimeRef = useRef(0)
 
   useEffect(() => {
@@ -187,11 +194,18 @@ export default function MathTest() {
   }
 
   const generateProblem = useCallback((): Problem => {
+    const weighted = usesZetamacWeighting(settings.difficulty)
     const generated = createProblem({
       operations: settings.operations,
       ranges: settings.ranges,
       divisionStyle: settings.divisionStyle,
+      zetamacWeighted: weighted,
+      history: weighted ? problemHistoryRef.current : undefined,
     })
+
+    if (weighted) {
+      recordProblemHistory(problemHistoryRef.current, generated)
+    }
 
     return {
       ...generated,
@@ -203,6 +217,7 @@ export default function MathTest() {
   }, [settings])
 
   const startTest = () => {
+    problemHistoryRef.current = createProblemHistory()
     setTestState('testing')
     setTimeLeft(settings.duration)
     setProblems([])
@@ -991,7 +1006,14 @@ export default function MathTest() {
             <div className={`mx-auto ${preferences.problemLayout === 'minimal' ? 'max-w-sm' : 'max-w-xs'}`}>
               <input
                 ref={inputRef}
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9-]*"
+                enterKeyHint="done"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 value={userInput}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
