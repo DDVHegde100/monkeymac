@@ -6,6 +6,8 @@ A comprehensive mental math training application that combines the aesthetic exc
 
 **Live Demo**: [monkeymac.vercel.app](https://monkeymac.vercel.app/test)
 
+**iOS App**: MonkeyMac is also packaged for iPhone and submitted through App Store Connect/TestFlight, with App Store release support in `mobile/`.
+
 ## Features
 
 - **Zetamac-faithful modes** — Classic (120s, exact Zetamac ranges), Medium, Hard, Abstract, and custom free play
@@ -13,6 +15,7 @@ A comprehensive mental math training application that combines the aesthetic exc
 - **Stats & analytics** — Personal history, operation breakdowns, streaks, and performance insights
 - **Leaderboards & achievements** — Solo rankings plus multiplayer ELO and win leaderboards
 - **Multiplayer races** — Create or join 6-character party codes (up to 4 players), shared problem seeds, live score sync, ELO updates
+- **Native mobile app** — Expo-powered iOS build with mode-specific stats, adjustable timers, training drills, and local-only storage
 
 ## Technical Stack
 
