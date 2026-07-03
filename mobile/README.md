@@ -1,6 +1,6 @@
 # MonkeyMac Mobile
 
-Local-only Zetamac Classic trainer for iOS/Android. No login — scores stay on your device.
+Local-only Zetamac-style trainer for iOS/Android. No login — scores stay on your device. The iOS build is configured for App Store Connect/TestFlight and App Store release.
 
 ## Requirements
 
@@ -52,9 +52,12 @@ npm run start:tunnel
 
 ## Features
 
-- Zetamac Classic (120s, weighted problem generation)
+- Zetamac Classic with faithful ranges: addition/subtraction 2-100, multiplication 2-12 by 2-100, and reverse division
+- Easy, Medium, and Hard modes with separate scores
+- Focused addition, subtraction, multiplication, and division training
+- Adjustable timers: 30s, 60s, 120s, and 240s
 - Session history (AsyncStorage)
-- Profile stats (best score, accuracy, ppm)
+- Profile stats with mode records, training averages, contribution-style activity, and PPM trend graph
 - Mobile-first UI with number pad keyboard
 
 ## Build for App Store (EAS)
@@ -67,3 +70,5 @@ eas build --platform ios
 ```
 
 Bundle ID: `com.monkeymac.app`
+
+For the release flow and App Store Connect checklist, see `TESTFLIGHT.md`.
