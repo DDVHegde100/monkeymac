@@ -113,15 +113,27 @@ function bucketRange(min: number, max: number, bucket: Bucket): OperationRange {
   }
 }
 
+function rightRange(range: OperationRange): OperationRange {
+  return {
+    min: range.rightMin ?? range.min,
+    max: range.rightMax ?? range.max,
+  }
+}
+
 function pickOperandInRange(range: OperationRange, random: () => number): number {
   return pickWeightedInt(range.min, range.max, random)
+}
+
+function pickRightOperandInRange(range: OperationRange, random: () => number): number {
+  const right = rightRange(range)
+  return pickWeightedInt(right.min, right.max, random)
 }
 
 function multiplicationDifficultyScore(a: number, b: number): number {
   const product = a * b
   const tableBoost =
     (SMALL_OPERAND_WEIGHTS[a] ?? 1) * (SMALL_OPERAND_WEIGHTS[b] ?? 1)
-  return (product / 144) * 0.6 + (tableBoost / 25) * 0.4
+  return Math.min(2, (product / 1200) * 0.7 + (tableBoost / 25) * 0.3)
 }
 
 function isTrivial(problem: GeneratedProblem): boolean {
@@ -182,8 +194,8 @@ function scoreCandidate(problem: GeneratedProblem, history: ProblemHistory): num
   }
 
   const operandWeight =
-    (buildWeightTable(2, 12)[problem.operand1 - 2] ?? 1) *
-    (buildWeightTable(2, 12)[Math.min(problem.operand2, 12) - 2] ?? 1)
+    (buildWeightTable(2, 12)[Math.min(Math.max(problem.operand1, 2), 12) - 2] ?? 1) *
+    (buildWeightTable(2, 100)[Math.min(Math.max(problem.operand2, 2), 100) - 2] ?? 1)
 
   const novelty = problem.operand1 === problem.operand2 ? 0.35 : 1
   const answerBalance = answerBalanceWeight(problem.answer, history)
@@ -222,17 +234,19 @@ function buildCandidate(
     }
     case 'multiplication':
       operand1 = pickWeightedInt(range.min, range.max, random)
-      operand2 = pickWeightedInt(range.min, range.max, random)
+      operand2 = pickRightOperandInRange(range, random)
       answer = operand1 * operand2
       break
     case 'division': {
       if (divisionStyle === 'reverse-multiply') {
         answer = pickWeightedInt(range.min, range.max, random)
-        operand2 = pickWeightedInt(range.min, range.max, random)
-        operand1 = answer * operand2
+        const largeFactor = pickRightOperandInRange(range, random)
+        operand1 = answer * largeFactor
+        operand2 = random() < 0.5 ? answer : largeFactor
+        answer = operand1 / operand2
       } else {
         answer = pickWeightedInt(range.min, range.max, random)
-        operand2 = pickWeightedInt(range.min, range.max, random)
+        operand2 = pickRightOperandInRange(range, random)
         operand1 = answer * operand2
       }
       break

@@ -3,6 +3,8 @@ export type Operation = 'addition' | 'subtraction' | 'multiplication' | 'divisio
 export interface OperationRange {
   min: number
   max: number
+  rightMin?: number
+  rightMax?: number
 }
 
 export interface DifficultyRanges {
@@ -32,8 +34,8 @@ export interface GenerateProblemOptions {
 export const CLASSIC_RANGES: DifficultyRanges = {
   addition: { min: 2, max: 100 },
   subtraction: { min: 2, max: 100 },
-  multiplication: { min: 2, max: 12 },
-  division: { min: 2, max: 12 },
+  multiplication: { min: 2, max: 12, rightMin: 2, rightMax: 100 },
+  division: { min: 2, max: 12, rightMin: 2, rightMax: 100 },
 }
 
 export const CLASSIC_OPERATIONS: Operation[] = [
@@ -68,6 +70,13 @@ function randomInt(min: number, max: number, random: () => number): number {
   return Math.floor(random() * (max - min + 1)) + min
 }
 
+function rightRange(range: OperationRange): OperationRange {
+  return {
+    min: range.rightMin ?? range.min,
+    max: range.rightMax ?? range.max,
+  }
+}
+
 function pickOperation(operations: Operation[], random: () => number): Operation {
   return operations[Math.floor(random() * operations.length)]
 }
@@ -77,7 +86,8 @@ function generateDivision(
   random: () => number
 ): Pick<GeneratedProblem, 'operand1' | 'operand2' | 'answer'> {
   const factorA = randomInt(range.min, range.max, random)
-  const factorB = randomInt(range.min, range.max, random)
+  const right = rightRange(range)
+  const factorB = randomInt(right.min, right.max, random)
   const dividend = factorA * factorB
   if (random() < 0.5) {
     return { operand1: dividend, operand2: factorA, answer: factorB }
@@ -112,7 +122,7 @@ export function generateProblem(options: GenerateProblemOptions): GeneratedProbl
       break
     case 'multiplication':
       operand1 = randomInt(range.min, range.max, random)
-      operand2 = randomInt(range.min, range.max, random)
+      operand2 = randomInt(rightRange(range).min, rightRange(range).max, random)
       answer = operand1 * operand2
       break
     default: {
