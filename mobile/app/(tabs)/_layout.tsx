@@ -3,7 +3,11 @@ import { Text } from 'react-native'
 import { colors } from '@/src/theme'
 
 function TabIcon({ label }: { label: string }) {
-  return <Text style={{ fontSize: 18 }}>{label}</Text>
+  return (
+    <Text style={{ color: colors.accent, fontSize: 15, fontWeight: '900', letterSpacing: 0.5 }}>
+      {label}
+    </Text>
+  )
 }
 
 export default function TabLayout() {
@@ -25,21 +29,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Train',
-          tabBarIcon: () => <TabIcon label="⚡" />,
+          tabBarIcon: () => <TabIcon label="Σ" />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: 'History',
-          tabBarIcon: () => <TabIcon label="📈" />,
+          tabBarIcon: () => <TabIcon label="↗" />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: () => <TabIcon label="🐵" />,
+          tabBarIcon: () => <TabIcon label="MM" />,
         }}
       />
     </Tabs>
