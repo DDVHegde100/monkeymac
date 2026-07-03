@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   KeyboardAvoidingView,
@@ -12,12 +12,11 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
-  CLASSIC_OPERATIONS,
-  CLASSIC_RANGES,
   generateProblem,
   getOperationSymbol,
   type GeneratedProblem,
 } from '@/src/lib/problemGenerator'
+import { getMode, normalizeDuration } from '@/src/lib/modes'
 import {
   createProblemHistory,
   recordProblemHistory,
@@ -26,10 +25,11 @@ import {
 import { saveSession } from '@/src/lib/storage'
 import { colors, spacing, typography } from '@/src/theme'
 
-const DURATION = 120
-
 export default function TestScreen() {
-  const [timeLeft, setTimeLeft] = useState(DURATION)
+  const params = useLocalSearchParams<{ mode?: string; duration?: string }>()
+  const mode = getMode(params.mode)
+  const duration = normalizeDuration(params.duration, mode.defaultDuration)
+  const [timeLeft, setTimeLeft] = useState<number>(duration)
   const [score, setScore] = useState(0)
   const [attempts, setAttempts] = useState(0)
   const [input, setInput] = useState('')
@@ -40,39 +40,54 @@ export default function TestScreen() {
 
   const nextProblem = useCallback(() => {
     const problem = generateProblem({
-      operations: CLASSIC_OPERATIONS,
-      ranges: CLASSIC_RANGES,
-      divisionStyle: 'reverse-multiply',
-      zetamacWeighted: true,
+      operations: mode.operations,
+      ranges: mode.ranges,
+      divisionStyle: mode.divisionStyle,
+      zetamacWeighted: mode.zetamacWeighted,
       history: historyRef.current,
     })
     recordProblemHistory(historyRef.current, problem)
     setCurrent(problem)
     setInput('')
     setTimeout(() => inputRef.current?.focus(), 50)
-  }, [])
+  }, [mode])
 
   const finish = useCallback(async () => {
     if (finished) return
     setFinished(true)
-    const accuracy = attempts > 0 ? Math.round((score / attempts) * 100) : 0
-    const ppm = Math.round((score / DURATION) * 60)
+    const ppm = Math.round((score / duration) * 60)
     await saveSession({
       id: `${Date.now()}`,
+      modeId: mode.id,
+      modeTitle: mode.title,
+      category: mode.category,
       score,
       totalProblems: attempts,
       correctAnswers: score,
-      accuracy,
-      duration: DURATION,
+      duration,
       ppm,
       completedAt: new Date().toISOString(),
     })
-  }, [attempts, finished, score])
+  }, [attempts, duration, finished, mode, score])
 
   useEffect(() => {
     historyRef.current = createProblemHistory()
+    setTimeLeft(duration)
+    setScore(0)
+    setAttempts(0)
+    setFinished(false)
     nextProblem()
-  }, [nextProblem])
+  }, [duration, nextProblem])
+
+  const restart = useCallback(() => {
+    historyRef.current = createProblemHistory()
+    setTimeLeft(duration)
+    setScore(0)
+    setAttempts(0)
+    setInput('')
+    setFinished(false)
+    nextProblem()
+  }, [duration, nextProblem])
 
   useEffect(() => {
     if (finished) return
@@ -101,17 +116,17 @@ export default function TestScreen() {
   const seconds = String(timeLeft % 60).padStart(2, '0')
 
   if (finished) {
-    const accuracy = attempts > 0 ? Math.round((score / attempts) * 100) : 0
-    const ppm = Math.round((score / DURATION) * 60)
+    const ppm = Math.round((score / duration) * 60)
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.results}>
           <Text style={styles.doneLabel}>Time&apos;s up</Text>
+          <Text style={styles.resultMode}>{mode.title}</Text>
           <Text style={styles.finalScore}>{score}</Text>
           <Text style={styles.resultsMeta}>
-            {accuracy}% accuracy · {ppm} problems/min
+            {ppm} problems/min · {duration}s
           </Text>
-          <Pressable style={styles.primaryBtn} onPress={() => router.replace('/test')}>
+          <Pressable style={styles.primaryBtn} onPress={restart}>
             <Text style={styles.primaryBtnText}>Run again</Text>
           </Pressable>
           <Pressable style={styles.secondaryBtn} onPress={() => router.back()}>
@@ -132,10 +147,13 @@ export default function TestScreen() {
           <Pressable onPress={() => router.back()}>
             <Text style={styles.back}>← Exit</Text>
           </Pressable>
-          <Text style={[styles.timer, timeLeft <= 10 && styles.timerUrgent]}>
-            {minutes}:{seconds}
-          </Text>
-          <Text style={styles.score}>{score}</Text>
+          <View style={styles.centerMeta}>
+            <Text style={styles.modeName}>{mode.shortTitle}</Text>
+            <Text style={[styles.timer, timeLeft <= 10 && styles.timerUrgent]}>
+              {minutes}:{seconds}
+            </Text>
+          </View>
+          <Text style={[styles.score, { color: mode.accent }]}>{score}</Text>
         </View>
 
         <View style={styles.stage}>
@@ -181,6 +199,14 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   timerUrgent: { color: colors.incorrect },
+  centerMeta: { alignItems: 'center' },
+  modeName: {
+    color: colors.textMuted,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    fontWeight: '700',
+  },
   score: { color: colors.correct, fontSize: 24, fontWeight: '800', minWidth: 40, textAlign: 'right' },
   stage: {
     flex: 1,
@@ -212,6 +238,12 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   doneLabel: { color: colors.textMuted, fontSize: typography.body },
+  resultMode: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: '800',
+    marginTop: spacing.sm,
+  },
   finalScore: {
     color: colors.accent,
     fontSize: 72,
