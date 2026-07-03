@@ -30,12 +30,17 @@ export default function HistoryScreen() {
       renderItem={({ item }) => (
         <View style={styles.card}>
           <View style={styles.row}>
-            <Text style={styles.score}>{item.score}</Text>
-            <Text style={styles.meta}>{new Date(item.completedAt).toLocaleDateString()}</Text>
+            <View>
+              <Text style={styles.mode}>{item.modeTitle}</Text>
+              <Text style={styles.meta}>{new Date(item.completedAt).toLocaleDateString()}</Text>
+            </View>
+            <Text style={styles.score}>{item.ppm}</Text>
           </View>
-          <Text style={styles.detail}>
-            {item.accuracy}% accuracy · {item.ppm} ppm · {item.duration}s
-          </Text>
+          <View style={styles.detailRow}>
+            <Text style={styles.detail}>{item.score} solved</Text>
+            <Text style={styles.detail}>{item.duration}s</Text>
+            <Text style={styles.detail}>{item.category}</Text>
+          </View>
         </View>
       )}
     />
@@ -60,6 +65,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  mode: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: '800',
+  },
   score: {
     color: colors.accent,
     fontSize: 28,
@@ -68,10 +78,22 @@ const styles = StyleSheet.create({
   meta: {
     color: colors.textMuted,
     fontSize: typography.caption,
+    marginTop: spacing.xs,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   detail: {
     color: colors.textMuted,
-    marginTop: spacing.xs,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 999,
+    overflow: 'hidden',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    fontSize: typography.caption,
+    textTransform: 'capitalize',
   },
   empty: {
     flex: 1,
