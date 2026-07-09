@@ -253,3 +253,5 @@ This project follows standard Git workflow practices. Please ensure all commits 
 ## License
 
 MIT License - see LICENSE file for details.
+\n\n---\n\n**Author:** [Dhruv Hegde](https://github.com/DDVHegde100) · CS @ University of Michigan\n
+**License:** [MIT](LICENSE)
